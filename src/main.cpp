@@ -35,7 +35,7 @@ int main() {
     std::vector<SimpleGraph::vertex_descriptor> vertices;
 
     // Number of vertices
-    int num_vertices = 10;
+    int num_vertices = 100;
 
     // Set random seed
     std::srand(static_cast<unsigned>(std::time(0)));
@@ -49,9 +49,9 @@ int main() {
         G[v].x = static_cast<float>(std::rand() % 100) / 10.0f;
         G[v].y = static_cast<float>(std::rand() % 100) / 10.0f;
         // Set label
-        G[v].label = "$\\frac{" + std::to_string(i) + "}{2}$";
+        G[v].label = "$v_{" + std::to_string(i) + "}$";
         // Set size
-        G[v].size = 0.5;
+        G[v].size = 0.7;
     }
 
     // Add edge
