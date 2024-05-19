@@ -11,7 +11,8 @@ if [ "$output_type" = "png" ]; then
     dot -Tpng graph.dot -o graph.png
 elif [ "$output_type" = "tex" ]; then
     generate_diagram
-    dot2tex -tmath graph.dot > graph.tex
+    dot2tex -t raw --preproc graph.dot > pre.tex
+    dot2tex -t raw -f tikz --figpreamble="\huge" pre.tex > graph.tex
     pdflatex graph.tex
 else
     echo "Error: Invalid output type. Please specify 'png' or 'tex'."
