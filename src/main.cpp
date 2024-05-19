@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <string>
 
+// Vertex properties structure
 struct VertexProperties {
     float x, y;
     std::string label;
@@ -37,7 +38,7 @@ int main() {
     int num_vertices = 10;
 
     // Set random seed
-    std::srand(std::time(0));
+    std::srand(static_cast<unsigned>(std::time(0)));
 
     // Add vertices
     for (int i = 0; i < num_vertices; ++i) {
@@ -48,7 +49,7 @@ int main() {
         G[v].x = static_cast<float>(std::rand() % 100) / 10.0f;
         G[v].y = static_cast<float>(std::rand() % 100) / 10.0f;
         // Set label
-        G[v].label = "Vertex " + std::to_string(i);
+        G[v].label = "$\\frac{" + std::to_string(i) + "}{2}$";
         // Set size
         G[v].size = 0.5;
     }

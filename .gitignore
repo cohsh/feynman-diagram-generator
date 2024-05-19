@@ -42,3 +42,9 @@ build/
 
 # Graph PNG
 *.png
+
+# TeX files
+*.aux
+*.log
+*.pdf
+*.tex
