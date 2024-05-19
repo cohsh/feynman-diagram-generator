@@ -12,9 +12,13 @@ int main() {
     // Vector for vertices
     std::vector<SimpleGraph::vertex_descriptor> vertices;
 
+    // Number of vertices
+    int num_vertices = 10;
+
     // Add vertices
-    vertices.push_back(add_vertex(G));
-    vertices.push_back(add_vertex(G));
+    for (int i = 0; i < num_vertices; ++i) {
+        vertices.push_back(add_vertex(G));
+    }
 
     // Add edge
     bool added;
