@@ -8,5 +8,12 @@ project(feynman_diagram_generator LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# Find Boost
+find_package(Boost REQUIRED)
+# find_package(Graphviz REQUIRED)
+
 # Make executable from src/main.cpp
 add_executable(feynman_diagram_generator src/main.cpp)
+
+# Link Boost libraries
+target_link_libraries(feynman_diagram_generator Boost::boost)

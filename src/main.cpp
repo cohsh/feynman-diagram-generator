@@ -1,5 +1,6 @@
 #include <iostream>
 #include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/graphviz.hpp>
 #include <tuple>
 
 typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS> SimpleGraph;
@@ -18,6 +19,9 @@ int main() {
     } else {
         std::cout << "Failed to add edge between" << vertex_left << " and " << vertex_right << std::endl;
     }
+
+    std::ofstream file("graph.dot");
+    boost::write_graphviz(file, G);
 
     return 0;
 }
