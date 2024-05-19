@@ -9,6 +9,7 @@
 struct VertexProperties {
     float x, y;
     std::string label;
+    float size;
 };
 
 typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, VertexProperties> SimpleGraph;
@@ -20,7 +21,7 @@ public:
 
     template <class Vertex>
     void operator()(std::ostream &out, const Vertex &v) const {
-        out << "[label=\"" << g_[v].label << "\", pos=\"" << g_[v].x << "," << g_[v].y << "!\"]";
+        out << "[label=\"" << g_[v].label << "\", pos=\"" << g_[v].x << "," << g_[v].y << "!\", width=\"" << g_[v].size << "\", height=\"" << g_[v].size << "\"]";
     }
 private:
     const SimpleGraph &g_;
@@ -48,6 +49,8 @@ int main() {
         G[v].y = static_cast<float>(std::rand() % 100) / 10.0f;
         // Set label
         G[v].label = "Vertex " + std::to_string(i);
+        // Set size
+        G[v].size = 0.5;
     }
 
     // Add edge
