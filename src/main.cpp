@@ -4,12 +4,27 @@
 #include <vector>
 #include <ctime>
 #include <cstdlib>
+#include <string>
 
 struct VertexProperties {
     float x, y;
+    std::string label;
 };
 
 typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, VertexProperties> SimpleGraph;
+
+// Custom property writer
+class vertex_writer {
+public:
+    vertex_writer(const SimpleGraph &g) : g_(g) {}
+
+    template <class Vertex>
+    void operator()(std::ostream &out, const Vertex &v) const {
+        out << "[label=\"" << g_[v].label << "\", pos=\"" << g_[v].x << "," << g_[v].y << "!\"]";
+    }
+private:
+    const SimpleGraph &g_;
+};
 
 int main() {
     SimpleGraph G;
@@ -31,6 +46,8 @@ int main() {
         // Set random coordinates
         G[v].x = static_cast<float>(std::rand() % 100) / 10.0f;
         G[v].y = static_cast<float>(std::rand() % 100) / 10.0f;
+        // Set label
+        G[v].label = "Vertex " + std::to_string(i);
     }
 
     // Add edge
@@ -50,7 +67,7 @@ int main() {
 
     // Output graph as Graphviz format (.dot)
     std::ofstream file("graph.dot");
-    boost::write_graphviz(file, G, boost::make_label_writer(boost::get(&VertexProperties::x, G)));
+    boost::write_graphviz(file, G, vertex_writer(G));
 
     return 0;
 }
