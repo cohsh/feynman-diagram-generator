@@ -63,7 +63,7 @@ public:
 };
 
 // Function to add solid edges recursively
-void add_solid_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, std::vector<std::pair<int, int>>& solid_edges, int index, int current_solid, int max_solid_edges, int& file_counter) {
+void add_solid_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, const std::vector<std::pair<int, int>>& dashed_edges, std::vector<std::pair<int, int>>& solid_edges, int index, int& file_counter) {
     if (current_solid == max_solid_edges) {
         // Output graph as Graphviz format (.dot)
         std::ofstream file("dot/graph_" + std::to_string(file_counter++) + ".dot");
@@ -93,49 +93,54 @@ void add_solid_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descr
     }
 }
 
+// Helper function to generate all combinations of k elements from a vector
+template <typename T>
+std::vector<std::vector<T>> combinations(const std::vector<T>& elements, int k) {
+    std::vector<std::vector<T>> result;
+    std::vector<bool> v(elements.size());
+    std::fill(v.begin(), v.begin() + k, true);
+
+    do {
+        std::vector<T> combination;
+        for (size_t i = 0; i < elements.size(); ++i) {
+            if (v[i]) {
+                combination.push_back(elements[i]);
+            }
+        }
+        result.push_back(combination);
+    } while (std::prev_permutation(v.begin(), v.end()));
+
+    return result;
+}
+
 // Function to add dashed edges recursively
-void add_dashed_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, int max_dashed_edges, int index, int current_dashed, std::set<std::pair<int, int>>& existing_edges, int& file_counter) {
-    if (current_dashed == max_dashed_edges) {
-        // Create all possible solid edges
+void add_dashed_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, int max_dashed_edges, int& file_counter) {
+    // Create all possible edges
+    std::vector<std::pair<int, int>> all_edges;
+    int n = vertices.size();
+    for (int i = 0; i < n; ++i) {
+        for (int j = i; j < n; ++j) {
+            all_edges.push_back({i, j});
+        }
+    }
+
+    // Generate all combinations of max_dashed_edges edges
+    auto all_combinations = combinations(all_edges, max_dashed_edges);
+
+    for (const auto& dashed_edges : all_combinations) {
+        // Add dashed edges
+        for (const auto& edge : dashed_edges) {
+            auto e = add_edge(vertices[edge.first], vertices[edge.second], G).first;
+            G[e].style = "dashed";
+        }
+
+        // After adding dashed edges, connect dashed edge vertices with solid edges in all possible ways
         std::vector<std::pair<int, int>> solid_edges;
-        for (size_t i = 0; i < vertices.size(); ++i) {
-            for (size_t j = i + 1; j < vertices.size(); ++j) {
-                solid_edges.push_back({i, j});
-            }
-        }
+        add_solid_edges(G, vertices, dashed_edges, solid_edges, 0, file_counter);
 
-        // Ensure at least one solid edge connects to vertex_initial and _final
-        for (size_t i = 1; i < vertices.size(); ++i) {
-            auto e = add_edge(vertices[0], vertices[i], G).first;
-            G[e].style = "solid";
-            G[vertices[0]].num_solid_edges++;
-            G[vertices[i]].num_solid_edges++;
-
-            add_solid_edges(G, vertices, solid_edges, 0, 1, 2, file_counter);
-
-            remove_edge(e, G);
-            G[vertices[0]].num_solid_edges--;
-            G[vertices[i]].num_solid_edges--;
-        }
-    }
-
-    if (index >= vertices.size()) {
-        return;
-    }
-
-    for (int i = index; i < vertices.size(); ++i) {
-        for (int j = 0; j < vertices.size(); ++j) {
-            if (existing_edges.find({i, j}) == existing_edges.end() && existing_edges.find({j, i}) == existing_edges.end()) {
-                // Add a dashed edge
-                auto e = add_edge(vertices[i], vertices[j], G).first;
-                G[e].style = "dashed";
-                existing_edges.insert({i, j});
-                existing_edges.insert({j, i});
-                add_dashed_edges(G, vertices, max_dashed_edges, i, current_dashed + 1, existing_edges, file_counter);
-                remove_edge(e, G);
-                existing_edges.erase({i, j});
-                existing_edges.erase({j, i});
-            }
+        // Remove dashed edges
+        for (const auto& edge : dashed_edges) {
+            remove_edge(vertices[edge.first], vertices[edge.second], G);
         }
     }
 }
@@ -201,12 +206,12 @@ int main() {
     }
     
     // Add edges (all possible combinations)
-    std::set<std::pair<int, int>> existing_edges;
+    std::set<std::pair<int, int>> existing_dashed_edges;
     std::vector<std::pair<int, int>> dashed_edges;
     int file_counter = 0;
     int max_dashed_edges = 2;
 
-    add_dashed_edges(G, vertices, max_dashed_edges, 0, 0, existing_edges, file_counter);
+    add_dashed_edges(G, vertices, max_dashed_edges, 0, 0, existing_dashed_edges, dashed_edges, file_counter);
 
     return 0;
 }
