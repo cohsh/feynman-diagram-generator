@@ -19,6 +19,7 @@ struct VertexProperties {
     int num_solid_edges;
     int required_solid_edges;
     int num_dashed_edges;
+    int degree;
 };
 
 // Edge properties structure
@@ -131,9 +132,20 @@ void add_dashed_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_desc
 
     for (const auto& dashed_edges : all_combinations) {
         // Add dashed edges
+        for (int i = 0; i < vertices.size(); ++i) {
+            G[vertices[i]].degree = 0;
+        }
+
         for (const auto& edge : dashed_edges) {
             auto e = add_edge(vertices[edge.first], vertices[edge.second], G).first;
+            G[vertices[edge.first]].degree++;
+            G[vertices[edge.second]].degree++;
             G[e].style = "dashed";
+        }
+
+        for (int i = 0; i < vertices.size(); ++i) {
+            int d = G[vertices[i]].degree;
+            G[vertices[i]].label = std::to_string(d);
         }
 
         // After adding dashed edges, connect dashed edge vertices with solid edges in all possible ways
@@ -174,6 +186,7 @@ int main() {
     G[vertex_initial].required_solid_edges = 1;
     G[vertex_initial].num_solid_edges = 0;
     G[vertex_initial].num_dashed_edges = 0;
+    G[vertex_initial].degree = 0;
 
     // Add a vertex for the final state
     auto vertex_final = add_vertex(G);
@@ -183,9 +196,10 @@ int main() {
     G[vertex_final].label = "";
     G[vertex_final].size = 0.5;
     G[vertex_final].fillcolor = "red";
-    G[vertex_initial].required_solid_edges = 1;
+    G[vertex_final].required_solid_edges = 1;
     G[vertex_final].num_solid_edges = 0;
     G[vertex_final].num_dashed_edges = 0;
+    G[vertex_final].degree = 0;
 
     // Add intermediate vertices
     for (int i = 0; i < num_intermediate_vertices; ++i) {
@@ -206,6 +220,7 @@ int main() {
         G[v].required_solid_edges = 2;
         G[v].num_solid_edges = 0;
         G[v].num_dashed_edges = 0;
+        G[v].degree = 0;
     }
     
     // Add edges (all possible combinations)
