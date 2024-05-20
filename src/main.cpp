@@ -96,15 +96,20 @@ void add_solid_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descr
     // Generate all combinations of two edges for initial and final states
     auto all_combinations_for_initial_and_final = combinations(all_edges_for_initial_and_final, 2);
 
-    for (const auto& dashed_edges : all_combinations_for_initial_and_final) {
+    for (const auto& solid_edges : all_combinations_for_initial_and_final) {
         // Add dashed edges
-        for (const auto& edge : dashed_edges) {
+        for (const auto& edge : solid_edges) {
             auto e = add_edge(vertices[edge.first], vertices[edge.second], G).first;
             G[e].style = "solid";
         }
         // Output graph as Graphviz format (.dot)
         std::ofstream file("dot/graph_" + std::to_string(file_counter++) + ".dot");
         boost::write_graphviz(file, G, vertex_writer(G), edge_writer(G), graph_writer());
+
+                // Remove dashed edges
+        for (const auto& edge : solid_edges) {
+            remove_edge(vertices[edge.first], vertices[edge.second], G);
+        }
     }
 
     return;
@@ -139,6 +144,8 @@ void add_dashed_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_desc
             remove_edge(vertices[edge.first], vertices[edge.second], G);
         }
     }
+
+    return;
 }
 
 int main() {
