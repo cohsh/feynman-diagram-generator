@@ -90,9 +90,10 @@ void generate_dot_files(SimpleGraph& G, const std::vector<SimpleGraph::vertex_de
 
     // Create all possible dashed edges
     std::vector<std::pair<int, int>> all_edges;
-    for (int i = 0; i < vertices.size() - 1; ++i) {
-        for (int j = i; j < vertices.size() - 1; ++j) {
+    for (int i = 0; i < vertices.size(); ++i) {
+        for (int j = i; j < vertices.size(); ++j) {
             all_edges.push_back({i, j});
+            std::cout << std::to_string(i) << " " << std::to_string(j) << std::endl;
         }
     }
 
@@ -103,7 +104,7 @@ void generate_dot_files(SimpleGraph& G, const std::vector<SimpleGraph::vertex_de
     for (const auto& dashed_edges : all_dashed_combinations) {
         for (const auto& solid_edges : all_solid_combinations) {
             // Initialize
-            for (int i = 0; i < vertices.size() - 1; ++i) {
+            for (int i = 0; i < vertices.size(); ++i) {
                 G[vertices[i]].dashed_degree = 0;
                 G[vertices[i]].solid_degree = 0;
             }
@@ -134,7 +135,7 @@ void generate_dot_files(SimpleGraph& G, const std::vector<SimpleGraph::vertex_de
                 output = false;
             }
 
-            for (int i = 0; i < vertices.size() - 1; ++i) {
+            for (int i = 0; i < vertices.size(); ++i) {
                 if (G[vertices[i]].solid_degree > 2) {
                     output = false;
                 }
@@ -149,7 +150,7 @@ void generate_dot_files(SimpleGraph& G, const std::vector<SimpleGraph::vertex_de
 
             if (output) {
                 // Labeling
-                for (int i = 0; i < vertices.size() - 1; ++i) {
+                for (int i = 0; i < vertices.size(); ++i) {
                     int d = G[vertices[i]].dashed_degree;
                     G[vertices[i]].label = std::to_string(d);
                 }
@@ -227,8 +228,6 @@ int main() {
         // Set random coordinates
         G[v].x = static_cast<float>(std::rand() % 100) / 10.0f;
         G[v].y = static_cast<float>(std::rand() % 100) / 10.0f;
-        // Set label
-//        G[v].label = "$g_{" + std::to_string(i) + "}$";
         G[v].label = "";
         // Set size
         G[v].size = 0.5;

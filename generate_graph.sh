@@ -1,5 +1,8 @@
 #!/bin/sh
 
+rm -rf dot/
+rm -rf png/
+
 generate_diagram() {
     ./build/feynman_diagram_generator
 }
