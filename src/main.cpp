@@ -40,6 +40,22 @@ int main() {
     // Set random seed
     std::srand(static_cast<unsigned>(std::time(0)));
 
+    // Add a vertex for the initial state
+    auto vertex_initial = add_vertex(G);
+    vertices.push_back(vertex_initial);
+    G[vertex_initial].x = 0.0;
+    G[vertex_initial].y = 0.0;
+    G[vertex_initial].label = "$v_{i}$";
+    G[vertex_initial].size = 0.7;
+
+    // Add a vertex for the final state
+    auto vertex_final = add_vertex(G);
+    vertices.push_back(vertex_final);
+    G[vertex_final].x = 10.0;
+    G[vertex_final].y = 0.0;
+    G[vertex_final].label = "$v_{f}$";
+    G[vertex_final].size = 0.7;
+
     // Add vertices
     for (int i = 0; i < num_vertices; ++i) {
         auto v = add_vertex(G);
