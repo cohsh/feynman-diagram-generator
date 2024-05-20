@@ -85,7 +85,7 @@ std::vector<std::vector<T>> combinations(const std::vector<T>& elements, int k) 
 }
 
 // Function to add dashed edges
-void add_dashed_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, int max_dashed_edges, int& file_counter) {
+void generate_dot_files(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, int max_dashed_edges, int& file_counter) {
     int max_solid_edges = 2 * max_dashed_edges - 1;
 
     // Create all possible dashed edges
@@ -99,8 +99,6 @@ void add_dashed_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_desc
     // Generate all combinations of max_dashed_edges edges
     auto all_dashed_combinations = combinations(all_edges, max_dashed_edges);
     auto all_solid_combinations = combinations(all_edges, max_solid_edges);
-
-    int count = 0;
 
     for (const auto& dashed_edges : all_dashed_combinations) {
         for (const auto& solid_edges : all_solid_combinations) {
@@ -243,7 +241,7 @@ int main() {
         G[v].dashed_degree = 0;
     }
     
-    add_dashed_edges(G, vertices, max_dashed_edges, file_counter);
+    generate_dot_files(G, vertices, max_dashed_edges, file_counter);
 
     return 0;
 }
