@@ -62,37 +62,6 @@ public:
     }
 };
 
-// Function to add solid edges recursively
-void add_solid_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, const std::vector<std::pair<int, int>>& dashed_edges, std::vector<std::pair<int, int>>& solid_edges, int index, int& file_counter) {
-    if (current_solid == max_solid_edges) {
-        // Output graph as Graphviz format (.dot)
-        std::ofstream file("dot/graph_" + std::to_string(file_counter++) + ".dot");
-        boost::write_graphviz(file, G, vertex_writer(G), edge_writer(G), graph_writer());
-        return;
-    }
-
-    if (index >= solid_edges.size()) {
-        return;
-    }
-
-    for (int i = index; i < solid_edges.size(); ++i) {
-        const auto& pair = solid_edges[i];
-        if (G[vertices[pair.first]].num_solid_edges < G[vertices[pair.first]].required_solid_edges &&
-            G[vertices[pair.second]].num_solid_edges < G[vertices[pair.second]].required_solid_edges) {
-            // Add a solid edge
-            auto e = add_edge(vertices[pair.first], vertices[pair.second], G).first;
-            G[e].style = "solid";
-            G[vertices[pair.first]].num_solid_edges++;
-            G[vertices[pair.second]].num_solid_edges++;
-            add_solid_edges(G, vertices, solid_edges, i + 1, current_solid + 1, max_solid_edges, file_counter);
-            remove_edge(e, G);
-            G[vertices[pair.first]].num_solid_edges--;
-            G[vertices[pair.second]].num_solid_edges--;
-//            solid_edges.pop_back();
-        }
-    }
-}
-
 // Helper function to generate all combinations of k elements from a vector
 template <typename T>
 std::vector<std::vector<T>> combinations(const std::vector<T>& elements, int k) {
@@ -113,7 +82,35 @@ std::vector<std::vector<T>> combinations(const std::vector<T>& elements, int k) 
     return result;
 }
 
-// Function to add dashed edges recursively
+// Function to add solid edges recursively
+void add_solid_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, int& file_counter) {
+    // Create all possible edges
+    std::vector<std::pair<int, int>> all_edges_for_initial_and_final;
+    int n = vertices.size();
+    for (int i = 0; i < n; ++i) {
+        for (int j = i + 1; j < n; ++j) {
+            all_edges_for_initial_and_final.push_back({i, j});
+        }
+    }
+
+    // Generate all combinations of two edges for initial and final states
+    auto all_combinations_for_initial_and_final = combinations(all_edges_for_initial_and_final, 2);
+
+    for (const auto& dashed_edges : all_combinations_for_initial_and_final) {
+        // Add dashed edges
+        for (const auto& edge : dashed_edges) {
+            auto e = add_edge(vertices[edge.first], vertices[edge.second], G).first;
+            G[e].style = "solid";
+        }
+        // Output graph as Graphviz format (.dot)
+        std::ofstream file("dot/graph_" + std::to_string(file_counter++) + ".dot");
+        boost::write_graphviz(file, G, vertex_writer(G), edge_writer(G), graph_writer());
+    }
+
+    return;
+}
+
+// Function to add dashed edges
 void add_dashed_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, int max_dashed_edges, int& file_counter) {
     // Create all possible edges
     std::vector<std::pair<int, int>> all_edges;
@@ -135,8 +132,7 @@ void add_dashed_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_desc
         }
 
         // After adding dashed edges, connect dashed edge vertices with solid edges in all possible ways
-        std::vector<std::pair<int, int>> solid_edges;
-        add_solid_edges(G, vertices, dashed_edges, solid_edges, 0, file_counter);
+        add_solid_edges(G, vertices, file_counter);
 
         // Remove dashed edges
         for (const auto& edge : dashed_edges) {
@@ -211,7 +207,7 @@ int main() {
     int file_counter = 0;
     int max_dashed_edges = 2;
 
-    add_dashed_edges(G, vertices, max_dashed_edges, 0, 0, existing_dashed_edges, dashed_edges, file_counter);
+    add_dashed_edges(G, vertices, max_dashed_edges, file_counter);
 
     return 0;
 }
