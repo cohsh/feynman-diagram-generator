@@ -11,6 +11,7 @@ struct VertexProperties {
     float x, y;
     std::string label;
     float size;
+    std::string fillcolor;
 };
 
 typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, VertexProperties> SimpleGraph;
@@ -22,7 +23,7 @@ public:
 
     template <class Vertex>
     void operator()(std::ostream &out, const Vertex &v) const {
-        out << "[label=\"" << g_[v].label << "\", pos=\"" << g_[v].x << "," << g_[v].y << "!\", width=\"" << g_[v].size << "\", height=\"" << g_[v].size << "\"]";
+        out << "[label=\"" << g_[v].label << "\", pos=\"" << g_[v].x << "," << g_[v].y << "!\", width=\"" << g_[v].size << "\", height=\"" << g_[v].size << "\", fillcolor=\"" << g_[v].fillcolor << "\", style=filled]";
     }
 private:
     const SimpleGraph &g_;
@@ -47,6 +48,7 @@ int main() {
     G[vertex_initial].y = 0.0;
     G[vertex_initial].label = "$v_{i}$";
     G[vertex_initial].size = 0.7;
+    G[vertex_initial].fillcolor = "blue";
 
     // Add a vertex for the final state
     auto vertex_final = add_vertex(G);
@@ -55,6 +57,7 @@ int main() {
     G[vertex_final].y = 0.0;
     G[vertex_final].label = "$v_{f}$";
     G[vertex_final].size = 0.7;
+    G[vertex_final].fillcolor = "red";
 
     // Add vertices
     for (int i = 0; i < num_vertices; ++i) {
@@ -68,6 +71,7 @@ int main() {
         G[v].label = "$v_{" + std::to_string(i) + "}$";
         // Set size
         G[v].size = 0.7;
+        G[v].fillcolor = "white";
     }
 
     // Add edge
