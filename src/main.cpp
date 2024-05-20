@@ -19,7 +19,8 @@ struct VertexProperties {
     int num_solid_edges;
     int required_solid_edges;
     int num_dashed_edges;
-    int degree;
+    int dashed_degree;
+    int solid_degree;
 };
 
 // Edge properties structure
@@ -83,91 +84,93 @@ std::vector<std::vector<T>> combinations(const std::vector<T>& elements, int k) 
     return result;
 }
 
-// Function to add solid edges recursively
-void add_solid_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, int max_dashed_edges, int& file_counter) {
-    // Create all possible edges
-    std::vector<std::pair<int, int>> all_edges;
-    int n = vertices.size();
-    for (int i = 0; i < n; ++i) {
-        for (int j = i; j < n; ++j) {
-            all_edges.push_back({i, j});
-        }
-    }
-
-    for (int i = 0; i < vertices.size() - 1; ++i) {
-        auto e_initial = add_edge(vertices[0], vertices[i], G).first;
-        G[e_initial].style = "solid";
-        for (int j = 0; j < vertices.size() - 1; ++j) {
-            auto e_final = add_edge(vertices[1], vertices[j], G).first;
-            G[e_final].style = "solid";
-
-            std::cout << std::to_string(i) << " " << std::to_string(j) << std::endl;
-
-            // Generate all combinations of two edges for initial and final states
-            auto all_combinations = combinations(all_edges, max_dashed_edges * 2 - 2);
-
-            for (const auto& solid_edges : all_combinations) {
-                // Add dashed edges
-                for (const auto& edge : solid_edges) {
-                    auto e = add_edge(vertices[edge.first], vertices[edge.second], G).first;
-                    G[e].style = "solid";
-                }
-                // Output graph as Graphviz format (.dot)
-                std::ofstream file("dot/graph_" + std::to_string(file_counter++) + ".dot");
-                boost::write_graphviz(file, G, vertex_writer(G), edge_writer(G), graph_writer());
-
-                        // Remove dashed edges
-                for (const auto& edge : solid_edges) {
-                    remove_edge(vertices[edge.first], vertices[edge.second], G);
-                }
-            }
-        }
-    }
-
-    return;
-}
-
 // Function to add dashed edges
 void add_dashed_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, int max_dashed_edges, int& file_counter) {
-    // Create all possible edges
+    int max_solid_edges = 2 * max_dashed_edges - 1;
+
+    // Create all possible dashed edges
     std::vector<std::pair<int, int>> all_edges;
-    int n = vertices.size();
-    for (int i = 0; i < n; ++i) {
-        for (int j = i; j < n; ++j) {
+    for (int i = 0; i < vertices.size() - 1; ++i) {
+        for (int j = i; j < vertices.size() - 1; ++j) {
             all_edges.push_back({i, j});
         }
     }
 
     // Generate all combinations of max_dashed_edges edges
-    auto all_combinations = combinations(all_edges, max_dashed_edges);
+    auto all_dashed_combinations = combinations(all_edges, max_dashed_edges);
+    auto all_solid_combinations = combinations(all_edges, max_solid_edges);
 
-    for (const auto& dashed_edges : all_combinations) {
-        // Add dashed edges
-        for (int i = 0; i < vertices.size(); ++i) {
-            G[vertices[i]].degree = 0;
-        }
+    int count = 0;
 
-        for (const auto& edge : dashed_edges) {
-            auto e = add_edge(vertices[edge.first], vertices[edge.second], G).first;
-            G[vertices[edge.first]].degree++;
-            G[vertices[edge.second]].degree++;
-            G[e].style = "dashed";
-        }
+    for (const auto& dashed_edges : all_dashed_combinations) {
+        for (const auto& solid_edges : all_solid_combinations) {
+            // Initialize
+            for (int i = 0; i < vertices.size() - 1; ++i) {
+                G[vertices[i]].dashed_degree = 0;
+                G[vertices[i]].solid_degree = 0;
+            }
 
-        for (int i = 0; i < vertices.size(); ++i) {
-            int d = G[vertices[i]].degree;
-            G[vertices[i]].label = std::to_string(d);
-        }
+            bool output = true;
 
-        // After adding dashed edges, connect dashed edge vertices with solid edges in all possible ways
-        add_solid_edges(G, vertices, max_dashed_edges, file_counter);
+            // Add dashed edges
+            for (const auto& dashed_edge : dashed_edges) {
+                auto e = add_edge(vertices[dashed_edge.first], vertices[dashed_edge.second], G).first;
+                G[vertices[dashed_edge.first]].dashed_degree++;
+                G[vertices[dashed_edge.second]].dashed_degree++;
+                G[e].style = "dashed";
+            }
 
-        // Remove dashed edges
-        for (const auto& edge : dashed_edges) {
-            remove_edge(vertices[edge.first], vertices[edge.second], G);
+            if (G[vertices[0]].dashed_degree < 1 || G[vertices[1]].dashed_degree < 1) {
+                output = false;
+            }
+
+            // Add solid edges
+            for (const auto& solid_edge : solid_edges) {
+                auto e = add_edge(vertices[solid_edge.first], vertices[solid_edge.second], G).first;
+                G[vertices[solid_edge.first]].solid_degree++;
+                G[vertices[solid_edge.second]].solid_degree++;
+                G[e].style = "solid";
+            }
+
+            if (G[vertices[0]].solid_degree != 1 || G[vertices[1]].solid_degree != 1) {
+                output = false;
+            }
+
+            for (int i = 0; i < vertices.size() - 1; ++i) {
+                if (G[vertices[i]].solid_degree > 2) {
+                    output = false;
+                }
+                if (G[vertices[i]].dashed_degree == 0 && G[vertices[i]].solid_degree != 0) {
+                    output = false;
+                }
+                if (G[vertices[i]].dashed_degree != 0 && G[vertices[i]].solid_degree == 0) {
+                    output = false;
+                }
+
+            }
+
+            if (output) {
+                // Labeling
+                for (int i = 0; i < vertices.size() - 1; ++i) {
+                    int d = G[vertices[i]].dashed_degree;
+                    G[vertices[i]].label = std::to_string(d);
+                }
+
+                // Output
+                std::ofstream file("dot/graph_" + std::to_string(file_counter++) + ".dot");
+                boost::write_graphviz(file, G, vertex_writer(G), edge_writer(G), graph_writer());
+            }
+
+            // Remove edges
+            for (const auto& dashed_edge : dashed_edges) {
+                remove_edge(vertices[dashed_edge.first], vertices[dashed_edge.second], G);
+            }
+
+            for (const auto& solid_edge : solid_edges) {
+                remove_edge(vertices[solid_edge.first], vertices[solid_edge.second], G);
+            }
         }
     }
-
     return;
 }
 
@@ -203,7 +206,7 @@ int main() {
     G[vertex_initial].required_solid_edges = 1;
     G[vertex_initial].num_solid_edges = 0;
     G[vertex_initial].num_dashed_edges = 0;
-    G[vertex_initial].degree = 0;
+    G[vertex_initial].dashed_degree = 0;
 
     // Add a vertex for the final state
     auto vertex_final = add_vertex(G);
@@ -216,7 +219,7 @@ int main() {
     G[vertex_final].required_solid_edges = 1;
     G[vertex_final].num_solid_edges = 0;
     G[vertex_final].num_dashed_edges = 0;
-    G[vertex_final].degree = 0;
+    G[vertex_final].dashed_degree = 0;
 
     // Add intermediate vertices
     for (int i = 0; i < max_intermediate_vertices; ++i) {
@@ -237,13 +240,9 @@ int main() {
         G[v].required_solid_edges = 2;
         G[v].num_solid_edges = 0;
         G[v].num_dashed_edges = 0;
-        G[v].degree = 0;
+        G[v].dashed_degree = 0;
     }
     
-    // Add edges (all possible combinations)
-    std::set<std::pair<int, int>> existing_dashed_edges;
-    std::vector<std::pair<int, int>> dashed_edges;
-
     add_dashed_edges(G, vertices, max_dashed_edges, file_counter);
 
     return 0;
