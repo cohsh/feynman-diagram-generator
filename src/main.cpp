@@ -16,7 +16,7 @@ struct VertexProperties {
 
 typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, VertexProperties> SimpleGraph;
 
-// Custom property writer
+// Custom vertex property writer
 class vertex_writer {
 public:
     vertex_writer(const SimpleGraph &g) : g_(g) {}
@@ -27,6 +27,14 @@ public:
     }
 private:
     const SimpleGraph &g_;
+};
+
+// Custom graph property writer
+class graph_writer {
+public:
+    void operator()(std::ostream &out) const {
+        out << "layout=neato;" << std::endl;
+    }
 };
 
 int main() {
@@ -91,7 +99,7 @@ int main() {
 
     // Output graph as Graphviz format (.dot)
     std::ofstream file("graph.dot");
-    boost::write_graphviz(file, G, vertex_writer(G));
+    boost::write_graphviz(file, G, vertex_writer(G), boost::default_writer(), graph_writer());
 
     return 0;
 }
