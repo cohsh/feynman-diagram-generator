@@ -14,7 +14,12 @@ struct VertexProperties {
     std::string fillcolor;
 };
 
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, VertexProperties> SimpleGraph;
+// Edge properties structure
+struct EdgeProperties {
+    std::string style;
+};
+
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, VertexProperties, EdgeProperties> SimpleGraph;
 
 // Custom vertex property writer
 class vertex_writer {
@@ -24,6 +29,19 @@ public:
     template <class Vertex>
     void operator()(std::ostream &out, const Vertex &v) const {
         out << "[label=\"" << g_[v].label << "\", pos=\"" << g_[v].x << "," << g_[v].y << "!\", width=\"" << g_[v].size << "\", height=\"" << g_[v].size << "\", fillcolor=\"" << g_[v].fillcolor << "\", style=filled]";
+    }
+private:
+    const SimpleGraph &g_;
+};
+
+// Custom edge property writer
+class edge_writer {
+public:
+    edge_writer(const SimpleGraph &g) : g_(g) {}
+
+    template <class Edge>
+    void operator()(std::ostream &out, const Edge &e) const {
+        out << "[style=\"" << g_[e].style << "\"]";
     }
 private:
     const SimpleGraph &g_;
@@ -44,8 +62,7 @@ int main() {
     std::vector<SimpleGraph::vertex_descriptor> vertices;
 
     // Number of vertices
-    int num_intermediate_vertices = 10;
-    int num_all_vertices = num_intermediate_vertices + 2;
+    int num_intermediate_vertices = 0;
 
     // Set random seed
     std::srand(static_cast<unsigned>(std::time(0)));
@@ -77,30 +94,24 @@ int main() {
         G[v].x = static_cast<float>(std::rand() % 100) / 10.0f;
         G[v].y = static_cast<float>(std::rand() % 100) / 10.0f;
         // Set label
-        G[v].label = "$v_{" + std::to_string(i) + "}$";
+        G[v].label = "$g_{" + std::to_string(i) + "}$";
         // Set size
         G[v].size = 0.5;
         G[v].fillcolor = "white";
     }
 
-    // Add edge
-    for (int i = 0; i < num_all_vertices - 1; ++i) {
-        int source = std::rand() % num_all_vertices;
-        int target = std::rand() % num_all_vertices;
+    // Add edges with different styles
+    for (int i = 0; i < vertices.size(); ++i) {
+        int source = std::rand() % vertices.size();
+        int target = std::rand() % vertices.size();
 
-        bool added;
-        boost::tie(std::ignore, added) = add_edge(vertices[source], vertices[target], G);
-
-        if (added) {
-            std::cout << "Edge added successfully between" << source << " and " << target << std::endl;
-        } else {
-            std::cout << "Failed to add edge between" << source << " and " << target << std::endl;
-        }
+        auto e = add_edge(vertices[source], vertices[target], G).first;
+        G[e].style = (i % 2 == 0) ? "solid" : "dashed";
     }
 
     // Output graph as Graphviz format (.dot)
     std::ofstream file("graph.dot");
-    boost::write_graphviz(file, G, vertex_writer(G), boost::default_writer(), graph_writer());
+    boost::write_graphviz(file, G, vertex_writer(G), edge_writer(G), graph_writer());
 
     return 0;
 }
