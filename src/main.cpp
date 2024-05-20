@@ -149,15 +149,38 @@ void generate_dot_files(SimpleGraph& G, const std::vector<SimpleGraph::vertex_de
                 }
 
                 if (output) {
+                    // Remove isolated vertices to create subgraph
+                    SimpleGraph subgraph;
+                    std::vector<SimpleGraph::vertex_descriptor> subgraph_vertices;
+
+                    for (auto v : vertices) {
+                        if (G[v].solid_degree > 0 || G[v].dashed_degree > 0) {
+                            auto new_v = add_vertex(G[v], subgraph);
+                            subgraph_vertices.push_back(new_v);
+                        }
+                    }
+
+                    // Add edges to subgraph
+                    for (auto e : make_iterator_range(edges(G))) {
+                        auto u = source(e, G);
+                        auto v = target(e, G);
+
+                        // Only add edge if both vertices are in the subgraph
+                        if ((G[u].solid_degree > 0 || G[u].dashed_degree > 0) &&
+                            (G[v].solid_degree > 0 || G[v].dashed_degree > 0)) {
+                            add_edge(subgraph_vertices[u], subgraph_vertices[v], G[e], subgraph);
+                        }
+                    }
+
                     // Labeling
-                    for (int i = 0; i < vertices.size(); ++i) {
-                        int d = G[vertices[i]].dashed_degree;
-                        G[vertices[i]].label = std::to_string(d);
+                    for (int i = 0; i < subgraph_vertices.size(); ++i) {
+                        int d = subgraph[subgraph_vertices[i]].dashed_degree;
+                        subgraph[subgraph_vertices[i]].label = std::to_string(d);
                     }
 
                     // Output
                     std::ofstream file("dot/graph_" + std::to_string(file_counter++) + ".dot");
-                    boost::write_graphviz(file, G, vertex_writer(G), edge_writer(G), graph_writer());
+                    boost::write_graphviz(file, subgraph, vertex_writer(subgraph), edge_writer(subgraph), graph_writer());
                 }
 
                 // Remove edges
