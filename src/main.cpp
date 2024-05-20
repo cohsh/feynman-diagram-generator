@@ -5,6 +5,8 @@
 #include <ctime>
 #include <cstdlib>
 #include <string>
+#include <set>
+#include <map>
 
 // Vertex properties structure
 struct VertexProperties {
@@ -12,6 +14,9 @@ struct VertexProperties {
     std::string label;
     float size;
     std::string fillcolor;
+    int num_solid_edges;
+    int required_solid_edges;
+    int num_dashed_edges;
 };
 
 // Edge properties structure
@@ -67,6 +72,10 @@ int main() {
     // Set random seed
     std::srand(static_cast<unsigned>(std::time(0)));
 
+    // Map to keep track of the number of edges per vertex
+    std::map<SimpleGraph::vertex_descriptor, int> solid_edge_count;
+    std::map<SimpleGraph::vertex_descriptor, int> dashed_edge_count;
+
     // Add a vertex for the initial state
     auto vertex_initial = add_vertex(G);
     vertices.push_back(vertex_initial);
@@ -75,6 +84,11 @@ int main() {
     G[vertex_initial].label = "$v_{i}$";
     G[vertex_initial].size = 0.5;
     G[vertex_initial].fillcolor = "blue";
+    G[vertex_initial].required_solid_edges = 1;
+    G[vertex_initial].num_solid_edges = 0;
+    G[vertex_initial].num_dashed_edges = 0;
+    dashed_edge_count[vertex_initial] = 0;
+    solid_edge_count[vertex_initial] = 0;
 
     // Add a vertex for the final state
     auto vertex_final = add_vertex(G);
@@ -84,8 +98,13 @@ int main() {
     G[vertex_final].label = "$v_{f}$";
     G[vertex_final].size = 0.5;
     G[vertex_final].fillcolor = "red";
+    G[vertex_initial].required_solid_edges = 1;
+    G[vertex_final].num_solid_edges = 0;
+    G[vertex_final].num_dashed_edges = 0;
+    dashed_edge_count[vertex_final] = 0;
+    solid_edge_count[vertex_final] = 0;
 
-    // Add vertices
+    // Add intermediate vertices
     for (int i = 0; i < num_intermediate_vertices; ++i) {
         auto v = add_vertex(G);
         vertices.push_back(v);
@@ -97,19 +116,41 @@ int main() {
         G[v].label = "$g_{" + std::to_string(i) + "}$";
         // Set size
         G[v].size = 0.5;
+        // Set fillcolor
         G[v].fillcolor = "white";
+        // Set number of solid edges
+        G[v].required_solid_edges = 2;
+        G[v].num_solid_edges = 0;
+        G[v].num_dashed_edges = 0;
+        solid_edge_count[v] = 0;
+        dashed_edge_count[v] = 0;
     }
+    
+    // Set about edges
+    std::set<std::pair<int, int>> existing_solid_edges;
+    std::set<std::pair<int, int>> existing_dashed_edges;
 
-    // Add edges with different styles
+    int num_all_solid_edges = 0;
+    for (int i = 0; i < vertices.size(); ++i) {
+        num_all_solid_edges += G[vertices[i]].num_solid_edges;
+    }
+    num_all_solid_edges /= 2;
+
+    // Add solid edges
     for (int i = 0; i < num_intermediate_vertices + 1; ++i) {
         int source = std::rand() % vertices.size();
         int target = std::rand() % vertices.size();
 
-        auto e = add_edge(vertices[source], vertices[target], G).first;
-        G[e].style = "solid";
+        if (G[vertices[source]].num_solid_edges < G[vertices[source]].required_solid_edges && G[vertices[target]].num_solid_edges < G[vertices[target]].required_solid_edges) {
+            auto e = add_edge(vertices[source], vertices[target], G).first;
+            G[e].style = "solid";
+            G[vertices[source]].num_solid_edges += 1;
+            G[vertices[target]].num_solid_edges += 1;
+        }
     }
 
-    for (int i = 0; i < num_intermediate_vertices + 1; ++i) {
+    // Add dashed edges
+    for (int i = 0; i < num_intermediate_vertices; ++i) {
         int source = std::rand() % vertices.size();
         int target = std::rand() % vertices.size();
 
