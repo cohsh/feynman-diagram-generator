@@ -84,7 +84,7 @@ std::vector<std::vector<T>> combinations(const std::vector<T>& elements, int k) 
 }
 
 // Function to add solid edges recursively
-void add_solid_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, int& file_counter) {
+void add_solid_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, int max_dashed_edges, int& file_counter) {
     // Create all possible edges
     std::vector<std::pair<int, int>> all_edges_for_initial_and_final;
     int n = vertices.size();
@@ -94,22 +94,31 @@ void add_solid_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descr
         }
     }
 
-    // Generate all combinations of two edges for initial and final states
-    auto all_combinations_for_initial_and_final = combinations(all_edges_for_initial_and_final, 2);
+    for (int i = 0; i < vertices.size(); ++i) {
+        auto e_initial = add_edge(vertices[0], vertices[i], G).first;
+        G[e_initial].style = "solid";
+        for (int j = 0; j < vertices.size(); ++j) {
+            auto e_final = add_edge(vertices[1], vertices[j], G).first;
+            G[e_final].style = "solid";
 
-    for (const auto& solid_edges : all_combinations_for_initial_and_final) {
-        // Add dashed edges
-        for (const auto& edge : solid_edges) {
-            auto e = add_edge(vertices[edge.first], vertices[edge.second], G).first;
-            G[e].style = "solid";
-        }
-        // Output graph as Graphviz format (.dot)
-        std::ofstream file("dot/graph_" + std::to_string(file_counter++) + ".dot");
-        boost::write_graphviz(file, G, vertex_writer(G), edge_writer(G), graph_writer());
+            // Generate all combinations of two edges for initial and final states
+            auto all_combinations_for_initial_and_final = combinations(all_edges_for_initial_and_final, max_dashed_edges * 2 - 2);
 
-                // Remove dashed edges
-        for (const auto& edge : solid_edges) {
-            remove_edge(vertices[edge.first], vertices[edge.second], G);
+            for (const auto& solid_edges : all_combinations_for_initial_and_final) {
+                // Add dashed edges
+                for (const auto& edge : solid_edges) {
+                    auto e = add_edge(vertices[edge.first], vertices[edge.second], G).first;
+                    G[e].style = "solid";
+                }
+                // Output graph as Graphviz format (.dot)
+                std::ofstream file("dot/graph_" + std::to_string(file_counter++) + ".dot");
+                boost::write_graphviz(file, G, vertex_writer(G), edge_writer(G), graph_writer());
+
+                        // Remove dashed edges
+                for (const auto& edge : solid_edges) {
+                    remove_edge(vertices[edge.first], vertices[edge.second], G);
+                }
+            }
         }
     }
 
@@ -149,7 +158,7 @@ void add_dashed_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_desc
         }
 
         // After adding dashed edges, connect dashed edge vertices with solid edges in all possible ways
-        add_solid_edges(G, vertices, file_counter);
+        add_solid_edges(G, vertices, max_dashed_edges, file_counter);
 
         // Remove dashed edges
         for (const auto& edge : dashed_edges) {
@@ -169,8 +178,14 @@ int main() {
     // Vector for vertices
     std::vector<SimpleGraph::vertex_descriptor> vertices;
 
+    // Counter for output files
+    int file_counter = 0;
+
+    // Maximum number of dashed edges
+    int max_dashed_edges = 2;
+
     // Number of vertices
-    int num_intermediate_vertices = 1;
+    int max_intermediate_vertices = max_dashed_edges * 2 - 2;
 
     // Set random seed
     std::srand(static_cast<unsigned>(std::time(0)));
@@ -202,7 +217,7 @@ int main() {
     G[vertex_final].degree = 0;
 
     // Add intermediate vertices
-    for (int i = 0; i < num_intermediate_vertices; ++i) {
+    for (int i = 0; i < max_intermediate_vertices; ++i) {
         auto v = add_vertex(G);
         vertices.push_back(v);
 
@@ -226,8 +241,6 @@ int main() {
     // Add edges (all possible combinations)
     std::set<std::pair<int, int>> existing_dashed_edges;
     std::vector<std::pair<int, int>> dashed_edges;
-    int file_counter = 0;
-    int max_dashed_edges = 2;
 
     add_dashed_edges(G, vertices, max_dashed_edges, file_counter);
 
