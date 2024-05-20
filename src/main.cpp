@@ -86,25 +86,27 @@ std::vector<std::vector<T>> combinations(const std::vector<T>& elements, int k) 
 // Function to add solid edges recursively
 void add_solid_edges(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, int max_dashed_edges, int& file_counter) {
     // Create all possible edges
-    std::vector<std::pair<int, int>> all_edges_for_initial_and_final;
+    std::vector<std::pair<int, int>> all_edges;
     int n = vertices.size();
     for (int i = 0; i < n; ++i) {
-        for (int j = i + 1; j < n; ++j) {
-            all_edges_for_initial_and_final.push_back({i, j});
+        for (int j = i; j < n; ++j) {
+            all_edges.push_back({i, j});
         }
     }
 
-    for (int i = 0; i < vertices.size(); ++i) {
+    for (int i = 0; i < vertices.size() - 1; ++i) {
         auto e_initial = add_edge(vertices[0], vertices[i], G).first;
         G[e_initial].style = "solid";
-        for (int j = 0; j < vertices.size(); ++j) {
+        for (int j = 0; j < vertices.size() - 1; ++j) {
             auto e_final = add_edge(vertices[1], vertices[j], G).first;
             G[e_final].style = "solid";
 
-            // Generate all combinations of two edges for initial and final states
-            auto all_combinations_for_initial_and_final = combinations(all_edges_for_initial_and_final, max_dashed_edges * 2 - 2);
+            std::cout << std::to_string(i) << " " << std::to_string(j) << std::endl;
 
-            for (const auto& solid_edges : all_combinations_for_initial_and_final) {
+            // Generate all combinations of two edges for initial and final states
+            auto all_combinations = combinations(all_edges, max_dashed_edges * 2 - 2);
+
+            for (const auto& solid_edges : all_combinations) {
                 // Add dashed edges
                 for (const auto& edge : solid_edges) {
                     auto e = add_edge(vertices[edge.first], vertices[edge.second], G).first;
