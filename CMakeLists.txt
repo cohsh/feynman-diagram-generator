@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.13)
 project(feynman_diagram_generator LANGUAGES CXX)
 
 # Specify the C++ standard
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Find Boost
