@@ -44,7 +44,8 @@ int main() {
     std::vector<SimpleGraph::vertex_descriptor> vertices;
 
     // Number of vertices
-    int num_vertices = 10;
+    int num_intermediate_vertices = 10;
+    int num_all_vertices = num_intermediate_vertices + 2;
 
     // Set random seed
     std::srand(static_cast<unsigned>(std::time(0)));
@@ -55,7 +56,7 @@ int main() {
     G[vertex_initial].x = 0.0;
     G[vertex_initial].y = 0.0;
     G[vertex_initial].label = "$v_{i}$";
-    G[vertex_initial].size = 0.7;
+    G[vertex_initial].size = 0.5;
     G[vertex_initial].fillcolor = "blue";
 
     // Add a vertex for the final state
@@ -64,11 +65,11 @@ int main() {
     G[vertex_final].x = 10.0;
     G[vertex_final].y = 0.0;
     G[vertex_final].label = "$v_{f}$";
-    G[vertex_final].size = 0.7;
+    G[vertex_final].size = 0.5;
     G[vertex_final].fillcolor = "red";
 
     // Add vertices
-    for (int i = 0; i < num_vertices; ++i) {
+    for (int i = 0; i < num_intermediate_vertices; ++i) {
         auto v = add_vertex(G);
         vertices.push_back(v);
 
@@ -78,14 +79,14 @@ int main() {
         // Set label
         G[v].label = "$v_{" + std::to_string(i) + "}$";
         // Set size
-        G[v].size = 0.7;
+        G[v].size = 0.5;
         G[v].fillcolor = "white";
     }
 
     // Add edge
-    for (int i = 0; i < num_vertices - 1; ++i) {
-        int source = std::rand() % num_vertices;
-        int target = std::rand() % num_vertices;
+    for (int i = 0; i < num_all_vertices - 1; ++i) {
+        int source = std::rand() % num_all_vertices;
+        int target = std::rand() % num_all_vertices;
 
         bool added;
         boost::tie(std::ignore, added) = add_edge(vertices[source], vertices[target], G);
