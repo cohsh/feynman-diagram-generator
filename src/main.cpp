@@ -67,42 +67,34 @@ int main() {
     std::vector<SimpleGraph::vertex_descriptor> vertices;
 
     // Number of vertices
-    int num_intermediate_vertices = 0;
+    int num_intermediate_vertices = 1;
 
     // Set random seed
     std::srand(static_cast<unsigned>(std::time(0)));
-
-    // Map to keep track of the number of edges per vertex
-    std::map<SimpleGraph::vertex_descriptor, int> solid_edge_count;
-    std::map<SimpleGraph::vertex_descriptor, int> dashed_edge_count;
 
     // Add a vertex for the initial state
     auto vertex_initial = add_vertex(G);
     vertices.push_back(vertex_initial);
     G[vertex_initial].x = 0.0;
     G[vertex_initial].y = 0.0;
-    G[vertex_initial].label = "$v_{i}$";
+    G[vertex_initial].label = "";
     G[vertex_initial].size = 0.5;
     G[vertex_initial].fillcolor = "blue";
     G[vertex_initial].required_solid_edges = 1;
     G[vertex_initial].num_solid_edges = 0;
     G[vertex_initial].num_dashed_edges = 0;
-    dashed_edge_count[vertex_initial] = 0;
-    solid_edge_count[vertex_initial] = 0;
 
     // Add a vertex for the final state
     auto vertex_final = add_vertex(G);
     vertices.push_back(vertex_final);
     G[vertex_final].x = 10.0;
     G[vertex_final].y = 0.0;
-    G[vertex_final].label = "$v_{f}$";
+    G[vertex_final].label = "";
     G[vertex_final].size = 0.5;
     G[vertex_final].fillcolor = "red";
     G[vertex_initial].required_solid_edges = 1;
     G[vertex_final].num_solid_edges = 0;
     G[vertex_final].num_dashed_edges = 0;
-    dashed_edge_count[vertex_final] = 0;
-    solid_edge_count[vertex_final] = 0;
 
     // Add intermediate vertices
     for (int i = 0; i < num_intermediate_vertices; ++i) {
@@ -122,8 +114,6 @@ int main() {
         G[v].required_solid_edges = 2;
         G[v].num_solid_edges = 0;
         G[v].num_dashed_edges = 0;
-        solid_edge_count[v] = 0;
-        dashed_edge_count[v] = 0;
     }
     
     // Set about edges
@@ -140,6 +130,16 @@ int main() {
     for (int i = 0; i < num_intermediate_vertices + 1; ++i) {
         int source = std::rand() % vertices.size();
         int target = std::rand() % vertices.size();
+
+        if (source == target) {
+            if (G[vertices[source]].num_solid_edges < G[vertices[source]].required_solid_edges - 1) {
+            auto e = add_edge(vertices[source], vertices[target], G).first;
+            G[e].style = "solid";
+            G[vertices[source]].num_solid_edges += 2;
+            }
+        } else {
+            continue;
+        }
 
         if (G[vertices[source]].num_solid_edges < G[vertices[source]].required_solid_edges && G[vertices[target]].num_solid_edges < G[vertices[target]].required_solid_edges) {
             auto e = add_edge(vertices[source], vertices[target], G).first;
