@@ -1,4 +1,4 @@
-# Feynman Diagram Generator
+# Feynman Diagram Generator (Under Construction)
 
 This project is a simple Feynman diagram generator written in C++ using the Boost Graph Library.
 
