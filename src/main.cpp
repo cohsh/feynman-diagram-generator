@@ -35,7 +35,7 @@ int main() {
     std::vector<SimpleGraph::vertex_descriptor> vertices;
 
     // Number of vertices
-    int num_vertices = 100;
+    int num_vertices = 10;
 
     // Set random seed
     std::srand(static_cast<unsigned>(std::time(0)));
