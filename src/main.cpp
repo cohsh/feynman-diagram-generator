@@ -101,12 +101,20 @@ int main() {
     }
 
     // Add edges with different styles
-    for (int i = 0; i < vertices.size(); ++i) {
+    for (int i = 0; i < num_intermediate_vertices + 1; ++i) {
         int source = std::rand() % vertices.size();
         int target = std::rand() % vertices.size();
 
         auto e = add_edge(vertices[source], vertices[target], G).first;
-        G[e].style = (i % 2 == 0) ? "solid" : "dashed";
+        G[e].style = "solid";
+    }
+
+    for (int i = 0; i < num_intermediate_vertices + 1; ++i) {
+        int source = std::rand() % vertices.size();
+        int target = std::rand() % vertices.size();
+
+        auto e = add_edge(vertices[source], vertices[target], G).first;
+        G[e].style = "dashed";
     }
 
     // Output graph as Graphviz format (.dot)
