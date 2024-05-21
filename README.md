@@ -16,7 +16,7 @@ Ensure you have the following installed on your system:
 sudo apt update
 sudo apt install cmake g++ libboost-all-dev graphviz
 ```
-### Arch Linux:
+#### Arch Linux:
 ```bash
 sudo pacman -S cmake boost graphviz
 ```
@@ -40,8 +40,8 @@ cmake -S . -B build
 make
 ```
 
-4. Run the executable:
+4. Run the executable ($n=1,2,3$ is the order of diagrams):
 ```bash
-./generate_graph.sh
+./generate_graph.sh n
 ```
 This will generate `dot/graph_*.dot` and `png/graph_*.png` files.
