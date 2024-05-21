@@ -261,6 +261,13 @@ int main(int argc, char* argv[]) {
                 }
 
                 for (const auto& v : vertices) {
+                    if (G[v].solid_degree == 0 && G[v].dashed_degree == 0) {
+                        G[v].required_solid_degree = 0;
+                        remove_vertex(v, G);
+                    }
+                }
+
+                for (const auto& v : vertices) {
                     if (G[v].solid_degree > 2) {
                         output = false;
                     }
@@ -270,13 +277,11 @@ int main(int argc, char* argv[]) {
                     if (G[v].dashed_degree != 0 && G[v].solid_degree == 0) {
                         output = false;
                     }
-
-                }
-
-                for (const auto& v : vertices) {
-                    if (G[v].solid_degree == 0 && G[v].dashed_degree == 0) {
-                        remove_vertex(v, G);
+/*
+                    if (G[v].solid_degree != G[v].required_solid_degree) {
+                        output = false;
                     }
+*/
                 }
 
                 if (output) {
