@@ -18,7 +18,6 @@ struct VertexProperties {
     std::string label;
     float size;
     std::string fillcolor;
-    int num_solid_edges;
     int required_solid_degree;
     int solid_degree;
     int dashed_degree;
@@ -139,7 +138,6 @@ std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> get_initial
     G[vertex_initial].size = 0.5;
     G[vertex_initial].fillcolor = "blue";
     G[vertex_initial].required_solid_degree = 1;
-    G[vertex_initial].num_solid_edges = 0;
     G[vertex_initial].solid_degree = 0;
     G[vertex_initial].dashed_degree = 0;
 
@@ -152,7 +150,6 @@ std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> get_initial
     G[vertex_final].size = 0.5;
     G[vertex_final].fillcolor = "red";
     G[vertex_final].required_solid_degree = 1;
-    G[vertex_final].num_solid_edges = 0;
     G[vertex_final].solid_degree = 0;
     G[vertex_final].dashed_degree = 0;
 
@@ -171,21 +168,11 @@ std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> get_initial
         G[v].fillcolor = "white";
         // Set number of solid edges
         G[v].required_solid_degree = 2;
-        G[v].num_solid_edges = 0;
         G[v].solid_degree = 0;
         G[v].dashed_degree = 0;
     }
 
     return std::make_tuple(G, vertices);
-}
-
-void remove_vertex_and_update_vector(SimpleGraph::vertex_descriptor v, SimpleGraph &G, std::vector<SimpleGraph::vertex_descriptor> &vertices) {
-    // Remove vertex from the graph
-    clear_vertex(v, G);
-    remove_vertex(v, G);
-
-    // Remove vertex from vertices vector
-    vertices.erase(std::remove(vertices.begin(), vertices.end(), v), vertices.end());
 }
 
 int main(int argc, char* argv[]) {
@@ -230,7 +217,8 @@ int main(int argc, char* argv[]) {
     // Generate all combinations of order edges
     auto all_dashed_combinations = combinations(all_edges, order);
 
-    for (int num_solid_edges = 0; num_solid_edges < max_solid_edges; ++num_solid_edges) {
+    for (int num_solid_edges = 0; num_solid_edges < max_solid_edges + 1; ++num_solid_edges) {
+        std::cout << std::to_string(num_solid_edges) << std::endl;
         auto all_solid_combinations = combinations(all_edges, num_solid_edges);
         for (const auto& dashed_edges : all_dashed_combinations) {
             for (const auto& solid_edges : all_solid_combinations) {
@@ -261,11 +249,13 @@ int main(int argc, char* argv[]) {
                     G[e].style = "solid";
                 }
 
-                if (G[vertices[0]].dashed_degree < 1 || G[vertices[1]].dashed_degree < 1) {
-                    output = false;
+                // Labeling
+                for (const auto& v : vertices) {
+                    int d = G[v].dashed_degree;
+                    G[v].label = std::to_string(d);
                 }
 
-                if (G[vertices[0]].solid_degree != 1 || G[vertices[1]].solid_degree != 1) {
+                if (G[vertices[0]].dashed_degree < 1 || G[vertices[1]].dashed_degree < 1) {
                     output = false;
                 }
 
@@ -296,12 +286,6 @@ int main(int argc, char* argv[]) {
                 }
 
                 if (output) {
-                    // Labeling
-                    for (const auto& v : connected_vertices) {
-                        int d = G[v].dashed_degree;
-                        G[v].label = std::to_string(d);
-                    }
-
                     // Output
                     std::ofstream file("dot/graph_" + std::to_string(file_counter++) + ".dot");
                     boost::write_graphviz(file, G, vertex_writer(G), edge_writer(G), graph_writer());
