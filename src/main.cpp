@@ -99,9 +99,113 @@ std::vector<std::vector<T>> combinations(const std::vector<T>& elements, int k) 
     return result;
 }
 
-// Function to add dashed edges
-void generate_dot_files(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, int order, int& file_counter) {
+struct Point {
+    double x;
+    double y;
+};
+
+std::vector<Point> calculate_polygon_vertices(int n, double radius) {
+    std::vector<Point> vertices;
+    // Angle between vertices (radian)
+    double angle_increment = 2.0 * M_PI / n;
+
+    for (int i = 0; i < n; ++i) {
+        double angle = i * angle_increment;
+        double x = radius * cos(angle);
+        double y = radius * sin(angle);
+        vertices.push_back({x, y});
+    }
+
+    return vertices;
+}
+
+int main(int argc, char* argv[]) {
+    // argc: Number of command-line args
+    // argv: Array of command-line args
+
+    // Ensure the "dot" directory exists
+    std::filesystem::create_directories("dot");
+
+    SimpleGraph G;
+
+    // Vector for vertices
+    std::vector<SimpleGraph::vertex_descriptor> vertices;
+
+    // Counter for output files
+    int file_counter = 0;
+
+    // Order of diagrams
+    int order = 0;
+
+    if (argc > 1) {
+        order = std::atoi(argv[1]);
+    } else {
+        std::cout << "Order is not specified." << std::endl;
+        return 1;
+    }
+
+    // Limit of order
+    if (order > 4) {
+        std::cout << "Please specify the order as 3 or less." << std::endl;
+        return 1;
+    }
+
+    // Maximum of vertices
+    int max_intermediate_vertices = 2 * (order - 1);
     int max_solid_edges = 2 * order - 1;
+
+    // Set random seed
+    std::srand(static_cast<unsigned>(std::time(0)));
+
+    std::vector<Point> polygon_vertices = calculate_polygon_vertices(max_intermediate_vertices + 2, 1.0);
+
+    // Add a vertex for the initial state
+    auto vertex_initial = add_vertex(G);
+    vertices.push_back(vertex_initial);
+    G[vertex_initial].x = polygon_vertices[0].x;
+    G[vertex_initial].y = polygon_vertices[0].y;
+    G[vertex_initial].label = "";
+    G[vertex_initial].size = 0.5;
+    G[vertex_initial].fillcolor = "blue";
+    G[vertex_initial].required_solid_edges = 1;
+    G[vertex_initial].num_solid_edges = 0;
+    G[vertex_initial].num_dashed_edges = 0;
+    G[vertex_initial].dashed_degree = 0;
+
+    // Add a vertex for the final state
+    auto vertex_final = add_vertex(G);
+    vertices.push_back(vertex_final);
+    G[vertex_final].x = polygon_vertices[1].x;
+    G[vertex_final].y = polygon_vertices[1].y;
+    G[vertex_final].label = "";
+    G[vertex_final].size = 0.5;
+    G[vertex_final].fillcolor = "red";
+    G[vertex_final].required_solid_edges = 1;
+    G[vertex_final].num_solid_edges = 0;
+    G[vertex_final].num_dashed_edges = 0;
+    G[vertex_final].dashed_degree = 0;
+
+    // Add intermediate vertices
+    for (int i = 0; i < max_intermediate_vertices; ++i) {
+        auto v = add_vertex(G);
+        vertices.push_back(v);
+
+        // Set random coordinates
+        G[v].x = polygon_vertices[i+2].x;
+        G[v].y = polygon_vertices[i+2].y;
+        G[v].label = "";
+        // Set size
+        G[v].size = 0.5;
+        // Set fillcolor
+        G[v].fillcolor = "white";
+        // Set number of solid edges
+        G[v].required_solid_edges = 2;
+        G[v].num_solid_edges = 0;
+        G[v].num_dashed_edges = 0;
+        G[v].dashed_degree = 0;
+    }
+    
+//    generate_dot_files(G, vertices, order, file_counter);
 
     // Create all possible dashed edges
     std::vector<std::pair<int, int>> all_edges;
@@ -190,116 +294,6 @@ void generate_dot_files(SimpleGraph& G, const std::vector<SimpleGraph::vertex_de
             }
         }
     }
-
-    return;
-}
-
-struct Point {
-    double x;
-    double y;
-};
-
-std::vector<Point> calculate_polygon_vertices(int n, double radius) {
-    std::vector<Point> vertices;
-    // Angle between vertices (radian)
-    double angle_increment = 2.0 * M_PI / n;
-
-    for (int i = 0; i < n; ++i) {
-        double angle = i * angle_increment;
-        double x = radius * cos(angle);
-        double y = radius * sin(angle);
-        vertices.push_back({x, y});
-    }
-
-    return vertices;
-}
-
-int main(int argc, char* argv[]) {
-    // argc: Number of command-line args
-    // argv: Array of command-line args
-
-    // Ensure the "dot" directory exists
-    std::filesystem::create_directories("dot");
-
-    SimpleGraph G;
-
-    // Vector for vertices
-    std::vector<SimpleGraph::vertex_descriptor> vertices;
-
-    // Counter for output files
-    int file_counter = 0;
-
-    // Order of diagrams
-    int order = 0;
-
-    if (argc > 1) {
-        order = std::atoi(argv[1]);
-    } else {
-        std::cout << "Order is not specified." << std::endl;
-        return 1;
-    }
-
-    // Limit of order
-    if (order > 4) {
-        std::cout << "Please specify the order as 3 or less." << std::endl;
-        return 1;
-    }
-
-    // Maximum of vertices
-    int max_intermediate_vertices = 2 * (order - 1);
-
-    // Set random seed
-    std::srand(static_cast<unsigned>(std::time(0)));
-
-    std::vector<Point> polygon_vertices = calculate_polygon_vertices(max_intermediate_vertices + 2, 1.0);
-
-    // Add a vertex for the initial state
-    auto vertex_initial = add_vertex(G);
-    vertices.push_back(vertex_initial);
-    G[vertex_initial].x = polygon_vertices[0].x;
-    G[vertex_initial].y = polygon_vertices[0].y;
-    G[vertex_initial].label = "";
-    G[vertex_initial].size = 0.5;
-    G[vertex_initial].fillcolor = "blue";
-    G[vertex_initial].required_solid_edges = 1;
-    G[vertex_initial].num_solid_edges = 0;
-    G[vertex_initial].num_dashed_edges = 0;
-    G[vertex_initial].dashed_degree = 0;
-
-    // Add a vertex for the final state
-    auto vertex_final = add_vertex(G);
-    vertices.push_back(vertex_final);
-    G[vertex_final].x = polygon_vertices[1].x;
-    G[vertex_final].y = polygon_vertices[1].y;
-    G[vertex_final].label = "";
-    G[vertex_final].size = 0.5;
-    G[vertex_final].fillcolor = "red";
-    G[vertex_final].required_solid_edges = 1;
-    G[vertex_final].num_solid_edges = 0;
-    G[vertex_final].num_dashed_edges = 0;
-    G[vertex_final].dashed_degree = 0;
-
-    // Add intermediate vertices
-    for (int i = 0; i < max_intermediate_vertices; ++i) {
-        auto v = add_vertex(G);
-        vertices.push_back(v);
-
-        // Set random coordinates
-        G[v].x = polygon_vertices[i+2].x;
-        G[v].y = polygon_vertices[i+2].y;
-        G[v].label = "";
-        // Set size
-        G[v].size = 0.5;
-        // Set fillcolor
-        G[v].fillcolor = "white";
-        // Set number of solid edges
-        G[v].required_solid_edges = 2;
-        G[v].num_solid_edges = 0;
-        G[v].num_dashed_edges = 0;
-        G[v].dashed_degree = 0;
-    }
-    
-    generate_dot_files(G, vertices, order, file_counter);
 
     return 0;
 }
