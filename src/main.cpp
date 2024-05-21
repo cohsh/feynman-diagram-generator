@@ -19,10 +19,9 @@ struct VertexProperties {
     float size;
     std::string fillcolor;
     int num_solid_edges;
-    int required_solid_edges;
-    int num_dashed_edges;
-    int dashed_degree;
+    int required_solid_degree;
     int solid_degree;
+    int dashed_degree;
 };
 
 // Edge properties structure
@@ -139,9 +138,9 @@ std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> get_initial
     G[vertex_initial].label = "";
     G[vertex_initial].size = 0.5;
     G[vertex_initial].fillcolor = "blue";
-    G[vertex_initial].required_solid_edges = 1;
+    G[vertex_initial].required_solid_degree = 1;
     G[vertex_initial].num_solid_edges = 0;
-    G[vertex_initial].num_dashed_edges = 0;
+    G[vertex_initial].solid_degree = 0;
     G[vertex_initial].dashed_degree = 0;
 
     // Add a vertex for the final state
@@ -152,9 +151,9 @@ std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> get_initial
     G[vertex_final].label = "";
     G[vertex_final].size = 0.5;
     G[vertex_final].fillcolor = "red";
-    G[vertex_final].required_solid_edges = 1;
+    G[vertex_final].required_solid_degree = 1;
     G[vertex_final].num_solid_edges = 0;
-    G[vertex_final].num_dashed_edges = 0;
+    G[vertex_final].solid_degree = 0;
     G[vertex_final].dashed_degree = 0;
 
     // Add intermediate vertices
@@ -171,9 +170,9 @@ std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> get_initial
         // Set fillcolor
         G[v].fillcolor = "white";
         // Set number of solid edges
-        G[v].required_solid_edges = 2;
+        G[v].required_solid_degree = 2;
         G[v].num_solid_edges = 0;
-        G[v].num_dashed_edges = 0;
+        G[v].solid_degree = 0;
         G[v].dashed_degree = 0;
     }
 
