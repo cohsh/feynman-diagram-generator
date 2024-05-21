@@ -209,17 +209,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    std::cout << std::to_string(all_edges.size()) << std::endl;
-
     // Generate all combinations of order edges
     auto all_dashed_combinations = combinations(all_edges, order);
-
-    for (const auto& edges : all_dashed_combinations) {
-        for (const auto& e : edges) {
-            std::cout << std::to_string(e.first) << " " << std::to_string(e.second) << std::endl;
-        }
-        std::cout << "---\n" << std::endl;
-    }
 
     for (int num_solid_edges = 0; num_solid_edges < max_solid_edges; ++num_solid_edges) {
         auto all_solid_combinations = combinations(all_edges, num_solid_edges);
