@@ -285,9 +285,8 @@ int main(int argc, char* argv[]) {
                     graph_is_correct = false;
                 }
 
-                // Perform BFS to find all vertices connected to vertices[0] and vertices[1]
+                // Perform BFS to find all vertices connected to vertices[0]
                 auto reachable_from_initial = bfs_reachable_vertices(G, vertices[0]);
-                auto reachable_from_final = bfs_reachable_vertices(G, vertices[1]);
 
                 for (const auto& v : vertices) {
                     if (G[v].solid_degree != 0 || G[v].dashed_degree != 0) {
@@ -297,12 +296,6 @@ int main(int argc, char* argv[]) {
                         }
                     }
                 }
-/*
-                // Collect all vertices that are reachable from either vertices[0] or vertices[1]
-                std::unordered_set<SimpleGraph::vertex_descriptor> reachable_vertices;
-                reachable_vertices.insert(reachable_from_initial.begin(), reachable_from_initial.end());
-                reachable_vertices.insert(reachable_from_final.begin(), reachable_from_final.end());
-*/
 
                 std::vector<SimpleGraph::vertex_descriptor> connected_vertices;
                 for (const auto& v : vertices) {
