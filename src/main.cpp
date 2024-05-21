@@ -200,7 +200,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Limit of order
-    if (order > 4) {
+    if (order > 3) {
         std::cout << "Please specify the order as 3 or less." << std::endl;
         return 1;
     }
