@@ -176,6 +176,26 @@ void generate_dot_files(SimpleGraph& G, const std::vector<SimpleGraph::vertex_de
     return;
 }
 
+struct Point {
+    double x;
+    double y;
+};
+
+std::vector<Point> calculate_polygon_vertices(int n, double radius) {
+    std::vector<Point> vertices;
+    // Angle between vertices (radian)
+    double angle_increment = 2.0 * M_PI / n;
+
+    for (int i = 0; i < n; ++i) {
+        double angle = i * angle_increment;
+        double x = radius * cos(angle);
+        double y = radius * sin(angle);
+        vertices.push_back({x, y});
+    }
+
+    return vertices;
+}
+
 int main(int argc, char* argv[]) {
     // argc: Number of command-line args
     // argv: Array of command-line args
@@ -213,11 +233,13 @@ int main(int argc, char* argv[]) {
     // Set random seed
     std::srand(static_cast<unsigned>(std::time(0)));
 
+    std::vector<Point> polygon_vertices = calculate_polygon_vertices(max_intermediate_vertices + 2, 1.0);
+
     // Add a vertex for the initial state
     auto vertex_initial = add_vertex(G);
     vertices.push_back(vertex_initial);
-    G[vertex_initial].x = 0.0;
-    G[vertex_initial].y = 0.0;
+    G[vertex_initial].x = polygon_vertices[0].x;
+    G[vertex_initial].y = polygon_vertices[0].y;
     G[vertex_initial].label = "";
     G[vertex_initial].size = 0.5;
     G[vertex_initial].fillcolor = "blue";
@@ -229,8 +251,8 @@ int main(int argc, char* argv[]) {
     // Add a vertex for the final state
     auto vertex_final = add_vertex(G);
     vertices.push_back(vertex_final);
-    G[vertex_final].x = 10.0;
-    G[vertex_final].y = 0.0;
+    G[vertex_final].x = polygon_vertices[1].x;
+    G[vertex_final].y = polygon_vertices[1].y;
     G[vertex_final].label = "";
     G[vertex_final].size = 0.5;
     G[vertex_final].fillcolor = "red";
@@ -245,8 +267,8 @@ int main(int argc, char* argv[]) {
         vertices.push_back(v);
 
         // Set random coordinates
-        G[v].x = static_cast<float>(std::rand() % 100) / 10.0f;
-        G[v].y = static_cast<float>(std::rand() % 100) / 10.0f;
+        G[v].x = polygon_vertices[i+2].x;
+        G[v].y = polygon_vertices[i+2].y;
         G[v].label = "";
         // Set size
         G[v].size = 0.5;
