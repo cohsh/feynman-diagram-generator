@@ -9,6 +9,7 @@
 #include <map>
 #include <algorithm>
 #include <filesystem>
+#include <cmath>
 
 // Vertex properties structure
 struct VertexProperties {
@@ -206,8 +207,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Number of vertices
-    int max_intermediate_vertices = order * 2 - 2;
+    // Maximum of vertices
+    int max_intermediate_vertices = 2 * (order - 1);
 
     // Set random seed
     std::srand(static_cast<unsigned>(std::time(0)));
