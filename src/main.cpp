@@ -200,6 +200,12 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    // Limit of order
+    if (order > 4) {
+        std::cout << "Please specify the order as 3 or less." << std::endl;
+        return 1;
+    }
+
     // Number of vertices
     int max_intermediate_vertices = order * 2 - 2;
 
