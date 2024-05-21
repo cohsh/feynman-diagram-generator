@@ -218,8 +218,10 @@ int main(int argc, char* argv[]) {
     // Create all possible dashed edges
     std::vector<std::pair<int, int>> all_edges;
 
-    for (int i = 0; i < vertices.size(); ++i) {
-        for (int j = i; j < vertices.size(); ++j) {
+    int n = 2 * order;
+
+    for (int i = 0; i < n; ++i) {
+        for (int j = i; j < n; ++j) {
             all_edges.push_back({i, j});
         }
     }
@@ -231,12 +233,21 @@ int main(int argc, char* argv[]) {
         auto all_solid_combinations = combinations(all_edges, num_solid_edges);
         for (const auto& dashed_edges : all_dashed_combinations) {
             for (const auto& solid_edges : all_solid_combinations) {
-                // Initialize
+                // Initialize graph
+                std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> result = get_initial_graph_and_vertices(order);
+
+                SimpleGraph G;
+                std::vector<SimpleGraph::vertex_descriptor> vertices;
+                
+                std::tie(G, vertices) = result;
+
+                // Initialize degree
                 for (const auto& v : vertices) {
                     G[v].dashed_degree = 0;
                     G[v].solid_degree = 0;
                 }
 
+                // Initialize output flag
                 bool output = true;
 
                 // Add dashed edges
