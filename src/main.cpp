@@ -213,11 +213,8 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < vertices.size(); ++i) {
         for (int j = i; j < vertices.size(); ++j) {
             all_edges.push_back({i, j});
-            std::cout << std::to_string(i) << " " << std::to_string(j) << std::endl;
         }
     }
-
-    std::cout << std::to_string(all_edges.size()) << std::endl;
 
     // Generate all combinations of order edges
     auto all_dashed_combinations = combinations(all_edges, order);
@@ -227,7 +224,7 @@ int main(int argc, char* argv[]) {
         for (const auto& dashed_edges : all_dashed_combinations) {
             for (const auto& solid_edges : all_solid_combinations) {
                 // Initialize
-                for (int i = 0; i < vertices.size(); ++i) {
+                for (int i = 0; i < vertices) {
                     G[vertices[i]].dashed_degree = 0;
                     G[vertices[i]].solid_degree = 0;
                 }
