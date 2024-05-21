@@ -23,6 +23,8 @@ struct VertexProperties {
     int required_solid_degree;
     int solid_degree;
     int dashed_degree;
+    bool solid_loop;
+    bool dashed_loop;
 };
 
 // Edge properties structure
@@ -142,6 +144,8 @@ std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> get_initial
     G[vertex_initial].required_solid_degree = 1;
     G[vertex_initial].solid_degree = 0;
     G[vertex_initial].dashed_degree = 0;
+    G[vertex_initial].solid_loop = false;
+    G[vertex_initial].dashed_loop = false;
 
     // Add a vertex for the final state
     auto vertex_final = add_vertex(G);
@@ -154,6 +158,8 @@ std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> get_initial
     G[vertex_final].required_solid_degree = 1;
     G[vertex_final].solid_degree = 0;
     G[vertex_final].dashed_degree = 0;
+    G[vertex_final].solid_loop = false;
+    G[vertex_final].dashed_loop = false;
 
     // Add intermediate vertices
     for (int i = 0; i < max_intermediate_vertices; ++i) {
@@ -264,6 +270,9 @@ int main(int argc, char* argv[]) {
                     auto e = add_edge(vertices[dashed_edge.first], vertices[dashed_edge.second], G).first;
                     G[vertices[dashed_edge.first]].dashed_degree++;
                     G[vertices[dashed_edge.second]].dashed_degree++;
+                    if (dashed_edge.first == dashed_edge.second) {
+                        G[vertices[dashed_edge.first]].dashed_loop = true;
+                    }
                     G[e].style = "dashed";
                 }
 
@@ -272,6 +281,10 @@ int main(int argc, char* argv[]) {
                     auto e = add_edge(vertices[solid_edge.first], vertices[solid_edge.second], G).first;
                     G[vertices[solid_edge.first]].solid_degree++;
                     G[vertices[solid_edge.second]].solid_degree++;
+                    if (solid_edge.first == solid_edge.second) {
+                        G[vertices[solid_edge.first]].solid_loop = true;
+                    }
+
                     G[e].style = "solid";
                 }
 
@@ -318,6 +331,10 @@ int main(int argc, char* argv[]) {
                     }
 
                     if (G[v].solid_degree != G[v].required_solid_degree) {
+                        graph_is_correct = false;
+                    }
+
+                    if (G[v].dashed_loop || G[v].solid_loop) {
                         graph_is_correct = false;
                     }
                 }
