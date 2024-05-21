@@ -208,13 +208,6 @@ int main(int argc, char* argv[]) {
 
     int max_solid_edges = 2 * order - 1;
 
-    std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> result = get_initial_graph_and_vertices(order);
-
-    SimpleGraph G;
-    std::vector<SimpleGraph::vertex_descriptor> vertices;
-    
-    std::tie(G, vertices) = result;
-
     // Create all possible dashed edges
     std::vector<std::pair<int, int>> all_edges;
 
