@@ -179,6 +179,15 @@ std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> get_initial
     return std::make_tuple(G, vertices);
 }
 
+void remove_vertex_and_update_vector(SimpleGraph::vertex_descriptor v, SimpleGraph &G, std::vector<SimpleGraph::vertex_descriptor> &vertices) {
+    // Remove vertex from the graph
+    clear_vertex(v, G);
+    remove_vertex(v, G);
+
+    // Remove vertex from vertices vector
+    vertices.erase(std::remove(vertices.begin(), vertices.end(), v), vertices.end());
+}
+
 int main(int argc, char* argv[]) {
     // argc: Number of command-line args
     // argv: Array of command-line args
@@ -244,10 +253,6 @@ int main(int argc, char* argv[]) {
                     G[e].style = "dashed";
                 }
 
-                if (G[vertices[0]].dashed_degree < 1 || G[vertices[1]].dashed_degree < 1) {
-                    output = false;
-                }
-
                 // Add solid edges
                 for (const auto& solid_edge : solid_edges) {
                     auto e = add_edge(vertices[solid_edge.first], vertices[solid_edge.second], G).first;
@@ -256,18 +261,25 @@ int main(int argc, char* argv[]) {
                     G[e].style = "solid";
                 }
 
+                if (G[vertices[0]].dashed_degree < 1 || G[vertices[1]].dashed_degree < 1) {
+                    output = false;
+                }
+
                 if (G[vertices[0]].solid_degree != 1 || G[vertices[1]].solid_degree != 1) {
                     output = false;
                 }
 
+                std::vector<SimpleGraph::vertex_descriptor> connected_vertices;
                 for (const auto& v : vertices) {
                     if (G[v].solid_degree == 0 && G[v].dashed_degree == 0) {
                         G[v].required_solid_degree = 0;
                         remove_vertex(v, G);
+                    } else {
+                        connected_vertices.push_back(v);
                     }
                 }
 
-                for (const auto& v : vertices) {
+                for (const auto& v : connected_vertices) {
                     if (G[v].solid_degree > 2) {
                         output = false;
                     }
@@ -277,16 +289,15 @@ int main(int argc, char* argv[]) {
                     if (G[v].dashed_degree != 0 && G[v].solid_degree == 0) {
                         output = false;
                     }
-/*
+
                     if (G[v].solid_degree != G[v].required_solid_degree) {
                         output = false;
                     }
-*/
                 }
 
                 if (output) {
                     // Labeling
-                    for (const auto& v : vertices) {
+                    for (const auto& v : connected_vertices) {
                         int d = G[v].dashed_degree;
                         G[v].label = std::to_string(d);
                     }
@@ -296,14 +307,6 @@ int main(int argc, char* argv[]) {
                     boost::write_graphviz(file, G, vertex_writer(G), edge_writer(G), graph_writer());
                 }
 
-                // Remove edges
-                for (const auto& dashed_edge : dashed_edges) {
-                    remove_edge(vertices[dashed_edge.first], vertices[dashed_edge.second], G);
-                }
-
-                for (const auto& solid_edge : solid_edges) {
-                    remove_edge(vertices[solid_edge.first], vertices[solid_edge.second], G);
-                }
             }
         }
     }
