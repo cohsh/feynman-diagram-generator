@@ -224,9 +224,9 @@ int main(int argc, char* argv[]) {
         for (const auto& dashed_edges : all_dashed_combinations) {
             for (const auto& solid_edges : all_solid_combinations) {
                 // Initialize
-                for (int i = 0; i < vertices) {
-                    G[vertices[i]].dashed_degree = 0;
-                    G[vertices[i]].solid_degree = 0;
+                for (const auto& v : vertices) {
+                    G[v].dashed_degree = 0;
+                    G[v].solid_degree = 0;
                 }
 
                 bool output = true;
@@ -255,14 +255,14 @@ int main(int argc, char* argv[]) {
                     output = false;
                 }
 
-                for (int i = 0; i < vertices.size(); ++i) {
-                    if (G[vertices[i]].solid_degree > 2) {
+                for (const auto& v : vertices) {
+                    if (G[v].solid_degree > 2) {
                         output = false;
                     }
-                    if (G[vertices[i]].dashed_degree == 0 && G[vertices[i]].solid_degree != 0) {
+                    if (G[v].dashed_degree == 0 && G[v].solid_degree != 0) {
                         output = false;
                     }
-                    if (G[vertices[i]].dashed_degree != 0 && G[vertices[i]].solid_degree == 0) {
+                    if (G[v].dashed_degree != 0 && G[v].solid_degree == 0) {
                         output = false;
                     }
 
@@ -270,9 +270,9 @@ int main(int argc, char* argv[]) {
 
                 if (output) {
                     // Labeling
-                    for (int i = 0; i < vertices.size(); ++i) {
-                        int d = G[vertices[i]].dashed_degree;
-                        G[vertices[i]].label = std::to_string(d);
+                    for (const auto& v : vertices) {
+                        int d = G[v].dashed_degree;
+                        G[v].label = std::to_string(d);
                     }
 
                     // Output
