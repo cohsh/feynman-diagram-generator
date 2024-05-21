@@ -17,9 +17,7 @@ struct VertexProperties {
     std::string label;
     float size;
     std::string fillcolor;
-    int num_solid_edges;
-    int required_solid_edges;
-    int num_dashed_edges;
+    int required_solid_degree;
     int dashed_degree;
     int solid_degree;
 };
@@ -167,9 +165,8 @@ int main(int argc, char* argv[]) {
     G[vertex_initial].label = "";
     G[vertex_initial].size = 0.5;
     G[vertex_initial].fillcolor = "blue";
-    G[vertex_initial].required_solid_edges = 1;
-    G[vertex_initial].num_solid_edges = 0;
-    G[vertex_initial].num_dashed_edges = 0;
+    G[vertex_initial].required_solid_degree = 1;
+    G[vertex_initial].solid_degree = 0;
     G[vertex_initial].dashed_degree = 0;
 
     // Add a vertex for the final state
@@ -180,9 +177,8 @@ int main(int argc, char* argv[]) {
     G[vertex_final].label = "";
     G[vertex_final].size = 0.5;
     G[vertex_final].fillcolor = "red";
-    G[vertex_final].required_solid_edges = 1;
-    G[vertex_final].num_solid_edges = 0;
-    G[vertex_final].num_dashed_edges = 0;
+    G[vertex_final].required_solid_degree = 1;
+    G[vertex_final].solid_degree = 0;
     G[vertex_final].dashed_degree = 0;
 
     // Add intermediate vertices
@@ -199,21 +195,17 @@ int main(int argc, char* argv[]) {
         // Set fillcolor
         G[v].fillcolor = "white";
         // Set number of solid edges
-        G[v].required_solid_edges = 2;
-        G[v].num_solid_edges = 0;
-        G[v].num_dashed_edges = 0;
+        G[v].required_solid_degree = 2;
+        G[v].solid_degree = 0;
         G[v].dashed_degree = 0;
     }
     
-//    generate_dot_files(G, vertices, order, file_counter);
-
     // Create all possible dashed edges
     std::vector<std::pair<int, int>> all_edges;
 
     for (int i = 0; i < vertices.size(); ++i) {
         for (int j = i; j < vertices.size(); ++j) {
             all_edges.push_back({i, j});
-            std::cout << std::to_string(i) << " " << std::to_string(j) << std::endl;
         }
     }
 
@@ -222,17 +214,24 @@ int main(int argc, char* argv[]) {
     // Generate all combinations of order edges
     auto all_dashed_combinations = combinations(all_edges, order);
 
+    for (const auto& edges : all_dashed_combinations) {
+        for (const auto& e : edges) {
+            std::cout << std::to_string(e.first) << " " << std::to_string(e.second) << std::endl;
+        }
+        std::cout << "---\n" << std::endl;
+    }
+
     for (int num_solid_edges = 0; num_solid_edges < max_solid_edges; ++num_solid_edges) {
         auto all_solid_combinations = combinations(all_edges, num_solid_edges);
         for (const auto& dashed_edges : all_dashed_combinations) {
             for (const auto& solid_edges : all_solid_combinations) {
                 // Initialize
-                for (int i = 0; i < vertices.size(); ++i) {
-                    G[vertices[i]].dashed_degree = 0;
-                    G[vertices[i]].solid_degree = 0;
+                for (const auto& v : vertices) {
+                    G[v].dashed_degree = 0;
+                    G[v].solid_degree = 0;
                 }
 
-                bool output = true;
+                bool graph_is_correct = true;
 
                 // Add dashed edges
                 for (const auto& dashed_edge : dashed_edges) {
@@ -243,7 +242,7 @@ int main(int argc, char* argv[]) {
                 }
 
                 if (G[vertices[0]].dashed_degree < 1 || G[vertices[1]].dashed_degree < 1) {
-                    output = false;
+                    graph_is_correct = false;
                 }
 
                 // Add solid edges
@@ -254,28 +253,25 @@ int main(int argc, char* argv[]) {
                     G[e].style = "solid";
                 }
 
-                if (G[vertices[0]].solid_degree != 1 || G[vertices[1]].solid_degree != 1) {
-                    output = false;
+                for (const auto& v : vertices) {
+                    if (G[v].solid_degree != G[v].required_solid_degree) {
+                        graph_is_correct = false;
+                    }
+/*
+                    if (G[v].dashed_degree == 0 && G[v].solid_degree != 0) {
+                        output = false;
+                    }
+                    if (G[v].dashed_degree != 0 && G[v].solid_degree == 0) {
+                        output = false;
+                    }
+*/
                 }
 
-                for (int i = 0; i < vertices.size(); ++i) {
-                    if (G[vertices[i]].solid_degree > 2) {
-                        output = false;
-                    }
-                    if (G[vertices[i]].dashed_degree == 0 && G[vertices[i]].solid_degree != 0) {
-                        output = false;
-                    }
-                    if (G[vertices[i]].dashed_degree != 0 && G[vertices[i]].solid_degree == 0) {
-                        output = false;
-                    }
-
-                }
-
-                if (output) {
+                if (graph_is_correct) {
                     // Labeling
-                    for (int i = 0; i < vertices.size(); ++i) {
-                        int d = G[vertices[i]].dashed_degree;
-                        G[vertices[i]].label = std::to_string(d);
+                    for (const auto& v : vertices) {
+                        int d = G[v].dashed_degree;
+                        G[v].label = std::to_string(d);
                     }
 
                     // Output
