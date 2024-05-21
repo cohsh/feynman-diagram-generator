@@ -230,8 +230,8 @@ int main(int argc, char* argv[]) {
                 
                 std::tie(G, vertices) = result;
 
-                // Initialize output flag
-                bool output = true;
+                // Initialize graph_is_correct flag
+                bool graph_is_correct = true;
 
                 // Add dashed edges
                 for (const auto& dashed_edge : dashed_edges) {
@@ -256,7 +256,7 @@ int main(int argc, char* argv[]) {
                 }
 
                 if (G[vertices[0]].dashed_degree < 1 || G[vertices[1]].dashed_degree < 1) {
-                    output = false;
+                    graph_is_correct = false;
                 }
 
                 std::vector<SimpleGraph::vertex_descriptor> connected_vertices;
@@ -271,22 +271,22 @@ int main(int argc, char* argv[]) {
 
                 for (const auto& v : connected_vertices) {
                     if (G[v].solid_degree > 2) {
-                        output = false;
+                        graph_is_correct = false;
                     }
                     if (G[v].dashed_degree == 0 && G[v].solid_degree != 0) {
-                        output = false;
+                        graph_is_correct = false;
                     }
                     if (G[v].dashed_degree != 0 && G[v].solid_degree == 0) {
-                        output = false;
+                        graph_is_correct = false;
                     }
 
                     if (G[v].solid_degree != G[v].required_solid_degree) {
-                        output = false;
+                        graph_is_correct = false;
                     }
                 }
 
-                if (output) {
-                    // Output
+                if (graph_is_correct) {
+                    // graph_is_correct
                     std::ofstream file("dot/graph_" + std::to_string(file_counter++) + ".dot");
                     boost::write_graphviz(file, G, vertex_writer(G), edge_writer(G), graph_writer());
                 }
