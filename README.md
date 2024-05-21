@@ -40,7 +40,7 @@ cmake -S . -B build
 make
 ```
 
-4. Run the executable ($n=1,2,3$ is the order of diagrams):
+4. Run the executable ($n=1,2$ is the order of diagrams):
 ```bash
 ./generate_graph.sh n
 ```

@@ -296,6 +296,7 @@ int main(int argc, char* argv[]) {
 
                 if (G[vertices[0]].dashed_degree < 1 || G[vertices[1]].dashed_degree < 1) {
                     graph_is_correct = false;
+                    continue;
                 }
 
                 // Perform BFS to find all vertices connected to vertices[0]
@@ -308,6 +309,10 @@ int main(int argc, char* argv[]) {
                             break;
                         }
                     }
+                }
+
+                if (!graph_is_correct) {
+                    continue;
                 }
 
                 std::vector<SimpleGraph::vertex_descriptor> connected_vertices;
@@ -338,6 +343,11 @@ int main(int argc, char* argv[]) {
                         graph_is_correct = false;
                     }
                 }
+
+                if (!graph_is_correct) {
+                    continue;
+                }
+
 
                 if (graph_is_correct) {
                     // graph_is_correct
