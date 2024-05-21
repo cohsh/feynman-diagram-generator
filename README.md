@@ -9,14 +9,18 @@ Ensure you have the following installed on your system:
 - A C++ compiler (e.g., g++, clang)
 - Boost library
 - Graphviz (for generating graphical output)
-- dot2tex (for generating `.tex` file for graph)
 
-### Install dependencies on Debian-based systems:
+### Install dependencies
+#### Debian-based systems:
 ```bash
 sudo apt update
 sudo apt install cmake g++ libboost-all-dev graphviz
-pip install dot2tex
 ```
+### Arch Linux:
+```bash
+sudo pacman -S cmake boost graphviz
+```
+
 
 ## Usage
 
@@ -26,13 +30,18 @@ git clone git@github.com:cohsh/feynman-diagram-generator.git
 cd feynman-diagram-generator
 ```
 
-2. Build the project:
+2. Create a build directory and run CMake:
+```bash
+cmake -S . -B build
+```
+
+3. Build the project:
 ```bash
 make
 ```
 
-3. Run the executable:
+4. Run the executable:
 ```bash
-./build/feynman_diagram_generator tex
+./generate_graph.sh
 ```
-This will generate a `graph.pdf` file in the project directory.
+This will generate `dot/graph_*.dot` and `png/graph_*.png` files.
