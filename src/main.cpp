@@ -69,18 +69,32 @@ public:
 template <typename T>
 std::vector<std::vector<T>> combinations(const std::vector<T>& elements, int k) {
     std::vector<std::vector<T>> result;
-    std::vector<bool> v(elements.size());
-    std::fill(v.begin(), v.begin() + k, true);
+    std::vector<int> indices(k, 0);
+    int n = elements.size();
 
-    do {
+    while (true) {
+        // Add current combination
         std::vector<T> combination;
-        for (size_t i = 0; i < elements.size(); ++i) {
-            if (v[i]) {
-                combination.push_back(elements[i]);
-            }
+        for (int i = 0; i < k; ++i) {
+            combination.push_back(elements[indices[i]]);
         }
         result.push_back(combination);
-    } while (std::prev_permutation(v.begin(), v.end()));
+        
+        // Move to next combination
+        int i = k - 1;
+        while (i >= 0 && indices[i] == n - 1) {
+            --i;
+        }
+        
+        if (i < 0) {
+            break;
+        }
+        
+        ++indices[i];
+        for (int j = i + 1; j < k; ++j) {
+            indices[j] = indices[i];
+        }
+    }
 
     return result;
 }
@@ -91,11 +105,15 @@ void generate_dot_files(SimpleGraph& G, const std::vector<SimpleGraph::vertex_de
 
     // Create all possible dashed edges
     std::vector<std::pair<int, int>> all_edges;
+
     for (int i = 0; i < vertices.size(); ++i) {
         for (int j = i; j < vertices.size(); ++j) {
             all_edges.push_back({i, j});
+            std::cout << std::to_string(i) << " " << std::to_string(j) << std::endl;
         }
     }
+
+    std::cout << std::to_string(all_edges.size()) << std::endl;
 
     // Generate all combinations of order edges
     auto all_dashed_combinations = combinations(all_edges, order);
