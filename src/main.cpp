@@ -85,8 +85,8 @@ std::vector<std::vector<T>> combinations(const std::vector<T>& elements, int k) 
 }
 
 // Function to add dashed edges
-void generate_dot_files(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, int max_dashed_edges, int& file_counter) {
-    int max_solid_edges = 2 * max_dashed_edges - 1;
+void generate_dot_files(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, int order, int& file_counter) {
+    int max_solid_edges = 2 * order - 1;
 
     // Create all possible dashed edges
     std::vector<std::pair<int, int>> all_edges;
@@ -96,8 +96,8 @@ void generate_dot_files(SimpleGraph& G, const std::vector<SimpleGraph::vertex_de
         }
     }
 
-    // Generate all combinations of max_dashed_edges edges
-    auto all_dashed_combinations = combinations(all_edges, max_dashed_edges);
+    // Generate all combinations of order edges
+    auto all_dashed_combinations = combinations(all_edges, order);
 
     for (int num_solid_edges = 0; num_solid_edges < max_solid_edges; ++num_solid_edges) {
         auto all_solid_combinations = combinations(all_edges, num_solid_edges);
@@ -175,7 +175,10 @@ void generate_dot_files(SimpleGraph& G, const std::vector<SimpleGraph::vertex_de
     return;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    // argc: Number of command-line args
+    // argv: Array of command-line args
+
     // Ensure the "dot" directory exists
     std::filesystem::create_directories("dot");
 
@@ -187,11 +190,18 @@ int main() {
     // Counter for output files
     int file_counter = 0;
 
-    // Maximum number of dashed edges
-    int max_dashed_edges = 2;
+    // Order of diagrams
+    int order = 0;
+
+    if (argc > 1) {
+        order = std::atoi(argv[1]);
+    } else {
+        std::cout << "Order is not specified." << std::endl;
+        return 1;
+    }
 
     // Number of vertices
-    int max_intermediate_vertices = max_dashed_edges * 2 - 2;
+    int max_intermediate_vertices = order * 2 - 2;
 
     // Set random seed
     std::srand(static_cast<unsigned>(std::time(0)));
@@ -242,7 +252,7 @@ int main() {
         G[v].dashed_degree = 0;
     }
     
-    generate_dot_files(G, vertices, max_dashed_edges, file_counter);
+    generate_dot_files(G, vertices, order, file_counter);
 
     return 0;
 }
