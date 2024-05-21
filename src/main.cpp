@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <cmath>
+#include <tuple>
 
 // Vertex properties structure
 struct VertexProperties {
@@ -119,43 +120,14 @@ std::vector<Point> calculate_polygon_vertices(int n, double radius) {
     return vertices;
 }
 
-int main(int argc, char* argv[]) {
-    // argc: Number of command-line args
-    // argv: Array of command-line args
-
-    // Ensure the "dot" directory exists
-    std::filesystem::create_directories("dot");
-
+std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> get_initial_graph_and_vertices(int order) {
     SimpleGraph G;
 
     // Vector for vertices
     std::vector<SimpleGraph::vertex_descriptor> vertices;
 
-    // Counter for output files
-    int file_counter = 0;
-
-    // Order of diagrams
-    int order = 0;
-
-    if (argc > 1) {
-        order = std::atoi(argv[1]);
-    } else {
-        std::cout << "Order is not specified." << std::endl;
-        return 1;
-    }
-
-    // Limit of order
-    if (order > 4) {
-        std::cout << "Please specify the order as 3 or less." << std::endl;
-        return 1;
-    }
-
     // Maximum of vertices
     int max_intermediate_vertices = 2 * (order - 1);
-    int max_solid_edges = 2 * order - 1;
-
-    // Set random seed
-    std::srand(static_cast<unsigned>(std::time(0)));
 
     std::vector<Point> polygon_vertices = calculate_polygon_vertices(max_intermediate_vertices + 2, 1.0);
 
@@ -204,8 +176,44 @@ int main(int argc, char* argv[]) {
         G[v].num_dashed_edges = 0;
         G[v].dashed_degree = 0;
     }
+
+    return std::make_tuple(G, vertices);
+}
+
+int main(int argc, char* argv[]) {
+    // argc: Number of command-line args
+    // argv: Array of command-line args
+
+    // Ensure the "dot" directory exists
+    std::filesystem::create_directories("dot");
+
+    // Counter for output files
+    int file_counter = 0;
+
+    // Order of diagrams
+    int order = 0;
+
+    if (argc > 1) {
+        order = std::atoi(argv[1]);
+    } else {
+        std::cout << "Order is not specified." << std::endl;
+        return 1;
+    }
+
+    // Limit of order
+    if (order > 4) {
+        std::cout << "Please specify the order as 3 or less." << std::endl;
+        return 1;
+    }
+
+    int max_solid_edges = 2 * order - 1;
+
+    std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> result = get_initial_graph_and_vertices(order);
+
+    SimpleGraph G;
+    std::vector<SimpleGraph::vertex_descriptor> vertices;
     
-//    generate_dot_files(G, vertices, order, file_counter);
+    std::tie(G, vertices) = result;
 
     // Create all possible dashed edges
     std::vector<std::pair<int, int>> all_edges;
