@@ -273,6 +273,12 @@ int main(int argc, char* argv[]) {
 
                 }
 
+                for (const auto& v : vertices) {
+                    if (G[v].solid_degree == 0 && G[v].dashed_degree == 0) {
+                        remove_vertex(v, G);
+                    }
+                }
+
                 if (output) {
                     // Labeling
                     for (const auto& v : vertices) {
