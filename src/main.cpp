@@ -285,13 +285,31 @@ int main(int argc, char* argv[]) {
                     graph_is_correct = false;
                 }
 
+                // Perform BFS to find all vertices connected to vertices[0] and vertices[1]
+                auto reachable_from_initial = bfs_reachable_vertices(G, vertices[0]);
+                auto reachable_from_final = bfs_reachable_vertices(G, vertices[1]);
+
+                for (const auto& v : vertices) {
+                    if (G[v].solid_degree != 0 || G[v].dashed_degree != 0) {
+                        if (reachable_from_initial.find(v) == reachable_from_initial.end()) {
+                            graph_is_correct = false;
+                            break;
+                        }
+                    }
+                }
+/*
+                // Collect all vertices that are reachable from either vertices[0] or vertices[1]
+                std::unordered_set<SimpleGraph::vertex_descriptor> reachable_vertices;
+                reachable_vertices.insert(reachable_from_initial.begin(), reachable_from_initial.end());
+                reachable_vertices.insert(reachable_from_final.begin(), reachable_from_final.end());
+*/
+
                 std::vector<SimpleGraph::vertex_descriptor> connected_vertices;
                 for (const auto& v : vertices) {
-                    if (G[v].solid_degree == 0 && G[v].dashed_degree == 0) {
-                        G[v].required_solid_degree = 0;
-                        remove_vertex(v, G);
-                    } else {
+                    if (reachable_from_initial.find(v) != reachable_from_initial.end()) {
                         connected_vertices.push_back(v);
+                    } else {
+                        remove_vertex(v, G);
                     }
                 }
 
