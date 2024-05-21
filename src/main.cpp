@@ -233,12 +233,6 @@ int main(int argc, char* argv[]) {
                 
                 std::tie(G, vertices) = result;
 
-                // Initialize degree
-                for (const auto& v : vertices) {
-                    G[v].dashed_degree = 0;
-                    G[v].solid_degree = 0;
-                }
-
                 // Initialize output flag
                 bool output = true;
 
