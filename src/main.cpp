@@ -11,6 +11,8 @@
 #include <filesystem>
 #include <cmath>
 #include <tuple>
+#include <queue>
+#include <unordered_set>
 
 // Vertex properties structure
 struct VertexProperties {
@@ -173,6 +175,30 @@ std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> get_initial
     }
 
     return std::make_tuple(G, vertices);
+}
+
+// BFS to find all vertices reachable from the start vertex
+std::unordered_set<SimpleGraph::vertex_descriptor> bfs_reachable_vertices(const SimpleGraph &G, SimpleGraph::vertex_descriptor start) {
+    std::unordered_set<SimpleGraph::vertex_descriptor> visited;
+    std::queue<SimpleGraph::vertex_descriptor> q;
+
+    visited.insert(start);
+    q.push(start);
+
+    while (!q.empty()) {
+        auto u = q.front();
+        q.pop();
+
+        for (auto edge_it = out_edges(u, G); edge_it.first != edge_it.second; ++edge_it.first) {
+            auto v = target(*edge_it.first, G);
+            if (visited.find(v) == visited.end()) {
+                visited.insert(v);
+                q.push(v);
+            }
+        }
+    }
+
+    return visited;
 }
 
 int main(int argc, char* argv[]) {
