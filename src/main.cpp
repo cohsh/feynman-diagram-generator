@@ -35,7 +35,7 @@ struct EdgeProperties {
     std::string style;
 };
 
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, VertexProperties, EdgeProperties> SimpleGraph;
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS, VertexProperties, EdgeProperties> SimpleGraph;
 
 // Custom vertex property writer
 class vertex_writer {
@@ -428,7 +428,7 @@ void add_short_slanted_lines(SimpleGraph& G, const std::vector<SimpleGraph::vert
             G[dummy].fillcolor = "white";
 
             // Add an edge between the original vertex and the dummy vertex
-            auto e = add_edge(v, dummy, G).first;
+            auto e = add_edge(dummy, v, G).first;
             G[e].style = "solid";
         }
 
@@ -446,7 +446,7 @@ void add_short_slanted_lines(SimpleGraph& G, const std::vector<SimpleGraph::vert
             auto e = add_edge(v, dummy, G).first;
             G[e].style = "solid";
         }
- 
+
     }
 }
 
