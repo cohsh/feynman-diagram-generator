@@ -392,6 +392,64 @@ void align_vertices(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descri
     return;
 }
 
+void add_short_slanted_lines(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices) {
+    double length = 0.3;
+    SimpleGraph::vertex_descriptor v_initial;
+    SimpleGraph::vertex_descriptor v_final;
+    double sign = 1.0;
+
+    for (const auto& v : vertices) {
+        if (G[v].initial && !G[v].final) {
+            v_initial = v;
+        }
+        if (G[v].final && !G[v].initial) {
+            v_final = v;
+        }
+
+        if (G[v].final && G[v].initial) {
+            v_initial = v;
+            v_final = v;
+        }
+    }
+
+    if (G[v_initial].x > G[v_final].x) {
+        sign = -1.0;
+    }
+
+    for (const auto& v : vertices) {
+        if (G[v].initial) {
+            // Add a dummy vertex
+            auto dummy = add_vertex(G);
+            // Position the dummy vertex slightly offset from the original vertex
+            G[dummy].x = G[v].x - sign * length; // Adjust as needed for desired slant length
+            G[dummy].y = G[v].y - length; // Adjust as needed for desired slant length
+            G[dummy].label = "";
+            G[dummy].size = 0.0;
+            G[dummy].fillcolor = "white";
+
+            // Add an edge between the original vertex and the dummy vertex
+            auto e = add_edge(v, dummy, G).first;
+            G[e].style = "solid";
+        }
+
+        if (G[v].final) {
+            // Add a dummy vertex
+            auto dummy = add_vertex(G);
+            // Position the dummy vertex slightly offset from the original vertex
+            G[dummy].x = G[v].x + sign * length; // Adjust as needed for desired slant length
+            G[dummy].y = G[v].y - length; // Adjust as needed for desired slant length
+            G[dummy].label = "";
+            G[dummy].size = 0.0;
+            G[dummy].fillcolor = "white";
+
+            // Add an edge between the original vertex and the dummy vertex
+            auto e = add_edge(v, dummy, G).first;
+            G[e].style = "solid";
+        }
+ 
+    }
+}
+
 int main(int argc, char* argv[]) {
     // argc: Number of command-line args
     // argv: Array of command-line args
@@ -562,6 +620,8 @@ int main(int argc, char* argv[]) {
 
                 if (!is_duplicate) {
                     unique_graphs.push_back(G);
+                    // Add short slanted lines to initial and final vertices
+                    add_short_slanted_lines(G, vertices);
                     // Align graph
                     // align_vertices(G, vertices, 3.0, 3.0);
                     // Write graph
