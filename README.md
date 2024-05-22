@@ -26,7 +26,7 @@ sudo apt install cmake g++ libboost-all-dev graphviz
 sudo pacman -S cmake boost graphviz
 ```
 
-#### macOS (with Homebrew)
+#### macOS (with Homebrew):
 ```bash
 brew install cmake boost graphviz
 ```
