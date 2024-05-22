@@ -50,4 +50,4 @@ build/
 *.tex
 
 # For README
-!sample.png
+!images/*.png
