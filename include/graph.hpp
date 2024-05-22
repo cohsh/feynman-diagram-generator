@@ -28,7 +28,7 @@ struct EdgeProperties {
     std::string style;
 };
 
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS, VertexProperties, EdgeProperties> SimpleGraph;
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, VertexProperties, EdgeProperties> SimpleGraph;
 
 // Custom vertex property writer
 class vertex_writer {
