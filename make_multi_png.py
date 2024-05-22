@@ -5,7 +5,7 @@ import matplotlib.image as mpimg
 
 def plot_images_in_grid(output_filename):
     # Get all png files in the ./png directory
-    image_files = glob.glob('./png/graph_*.png')
+    image_files = glob.glob('./png/*.png')
     
     # Calculate the total number of images
     n = len(image_files)

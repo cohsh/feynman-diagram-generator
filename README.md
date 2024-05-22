@@ -2,7 +2,9 @@
 
 This project is a simple Feynman diagram generator written in C++ using the Boost Graph Library.
 
-<img src="sample.png" width="600" >
+<img src="images/first.png" width="300" >
+
+<img src="images/second.png" width="600" >
 
 ## Prerequisites
 
