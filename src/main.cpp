@@ -417,11 +417,18 @@ int main(int argc, char* argv[]) {
                 int count_initial_and_final_vertices = 0;
                 int count_same_initial_and_final_vertices = 0;
                 int count_intermediate_vertices = 0;
+                int initial_is_found = false;
 
                 for (const auto& v : vertices) {
                     if (G[v].solid_degree == 1) {
-                        G[v].fillcolor = "red";
+                        if (count_initial_and_final_vertices == 0) {
+                            G[v].fillcolor = "red";
+                        } else if (count_initial_and_final_vertices == 1) {
+                            G[v].fillcolor = "blue";
+                        }
+
                         count_initial_and_final_vertices += 1;
+
                     } else if (G[v].solid_degree == 2) {
                         count_intermediate_vertices += 1;
                     } else if (G[v].solid_degree == 0) {
