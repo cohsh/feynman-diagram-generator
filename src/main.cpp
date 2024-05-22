@@ -207,7 +207,6 @@ std::unordered_set<SimpleGraph::vertex_descriptor> bfs_reachable_vertices(const 
     return visited;
 }
 
-
 // DFS to find all vertices reachable from the start vertex
 std::unordered_set<SimpleGraph::vertex_descriptor> dfs_reachable_vertices(const SimpleGraph &G, SimpleGraph::vertex_descriptor start) {
     std::unordered_set<SimpleGraph::vertex_descriptor> visited;
