@@ -415,19 +415,18 @@ int main(int argc, char* argv[]) {
 
                 // Check shape of graph
                 int count_initial_and_final_vertices = 0;
+                int count_same_initial_and_final_vertices = 0;
                 int count_intermediate_vertices = 0;
 
                 for (const auto& v : vertices) {
                     if (G[v].solid_degree == 1) {
-                        if (G[v].dashed_degree == 0) {
-                                graph_is_correct == false;
-                                break;
-                        } else {
-                            G[v].fillcolor = "red";
-                            count_initial_and_final_vertices += 1;
-                        }
+                        G[v].fillcolor = "red";
+                        count_initial_and_final_vertices += 1;
                     } else if (G[v].solid_degree == 2) {
                         count_intermediate_vertices += 1;
+                    } else if (G[v].solid_degree == 0) {
+                        G[v].fillcolor = "red";
+                        count_same_initial_and_final_vertices += 1;
                     } else {
                         graph_is_correct = false;
                         break;
@@ -437,12 +436,11 @@ int main(int argc, char* argv[]) {
                         graph_is_correct = false;
                         break;
                     }
-/*
-                    if (G[v].dashed_loop || G[v].solid_loop) {
+
+                    if (G[v].solid_loop) {
                         graph_is_correct = false;
                         break;
                     }
-*/
 
                 }
 
@@ -450,7 +448,15 @@ int main(int argc, char* argv[]) {
                     continue;
                 }
 
-                if (count_initial_and_final_vertices + count_intermediate_vertices != vertices.size() || count_initial_and_final_vertices > 2) {
+                if (count_same_initial_and_final_vertices == 0) {
+                    if (count_initial_and_final_vertices + count_intermediate_vertices != vertices.size() || count_initial_and_final_vertices > 2) {
+                        continue;
+                    }
+                } else if (count_same_initial_and_final_vertices == 1) {
+                    if (count_same_initial_and_final_vertices + count_intermediate_vertices != vertices.size() || count_initial_and_final_vertices != 0) {
+                        continue;
+                    }
+                } else {
                     continue;
                 }
 
