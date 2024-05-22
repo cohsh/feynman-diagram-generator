@@ -26,6 +26,8 @@ struct VertexProperties {
     int dashed_degree;
     bool solid_loop;
     bool dashed_loop;
+    bool initial;
+    bool final;
 };
 
 // Edge properties structure
@@ -152,6 +154,9 @@ std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> get_initial
         // Set having loop flag
         G[v].solid_loop = false;
         G[v].dashed_loop = false;
+        // Set initial and final flags
+        G[v].initial = false;
+        G[v].final = false;
     }
 
     return std::make_tuple(G, vertices);
@@ -313,6 +318,80 @@ bool are_graphs_isomorphic(const SimpleGraph& g1, const SimpleGraph& g2) {
     return boost::isomorphism(g1, g2);
 }
 
+void align_vertices(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices, double x_length, double y_length) {
+    std::vector<SimpleGraph::vertex_descriptor> lower_vertices;
+    std::vector<SimpleGraph::vertex_descriptor> upper_vertices;
+
+    SimpleGraph::vertex_descriptor v_initial;
+    SimpleGraph::vertex_descriptor v_final;
+
+    bool initial_is_final = false;
+    // Search initial and final vertices
+    for (const auto& v : vertices) {
+        if (G[v].initial && !G[v].final) {
+            v_initial = v;
+            lower_vertices.push_back(v_initial);
+        }
+        if (G[v].final && !G[v].initial) {
+            v_final = v;
+        }
+
+        if (G[v].final && G[v].initial) {
+            initial_is_final = true;
+            v_initial = v;
+            v_final = v;
+            lower_vertices.push_back(v_initial);
+        }
+    }
+
+    // Perform DFS to find all vertices connected to vertices[0]
+    auto reachable_from_initial = dfs_reachable_vertices_solid(G, v_initial);
+
+    for (const auto& v : vertices) {
+        if (!G[v].initial && !G[v].final) {
+            if (reachable_from_initial.find(v) != reachable_from_initial.end()) {
+                lower_vertices.push_back(v);
+            } else {
+                upper_vertices.push_back(v);
+            }
+        }
+    }
+
+    // Add final vertex
+    if (!initial_is_final) {
+        lower_vertices.push_back(v_final);
+    }
+
+    // Align lower
+    if (lower_vertices.size() > 1) {
+        double dx_lower = x_length / (lower_vertices.size() - 1);
+        // Align
+        for (int i = 0; i < lower_vertices.size(); ++i) {
+            G[lower_vertices[i]].x = dx_lower * i;
+            G[lower_vertices[i]].y = 0.0;
+        }
+
+    } else {
+        G[lower_vertices[0]].x = 0.0;
+        G[lower_vertices[0]].y = 0.0;
+    }
+
+    // Align upper
+    if (upper_vertices.size() > 1) {
+        double dx_upper = x_length / (upper_vertices.size() - 1);
+        // Align
+        for (int i = 0; i < upper_vertices.size(); ++i) {
+            G[upper_vertices[i]].x = dx_upper * i;
+            G[upper_vertices[i]].y = y_length;
+        }
+    } else if (upper_vertices.size() == 1) {
+        G[upper_vertices[0]].x = 0.0;
+        G[upper_vertices[0]].y = y_length;
+    }
+
+    return;
+}
+
 int main(int argc, char* argv[]) {
     // argc: Number of command-line args
     // argv: Array of command-line args
@@ -419,8 +498,10 @@ int main(int argc, char* argv[]) {
                     if (G[v].solid_degree == 1) {
                         if (count_initial_and_final_vertices == 0) {
                             G[v].fillcolor = "red";
+                            G[v].initial = true;
                         } else if (count_initial_and_final_vertices == 1) {
                             G[v].fillcolor = "blue";
+                            G[v].final = true;
                         }
 
                         count_initial_and_final_vertices += 1;
@@ -429,6 +510,8 @@ int main(int argc, char* argv[]) {
                         count_intermediate_vertices += 1;
                     } else if (G[v].solid_degree == 0) {
                         G[v].fillcolor = "red";
+                        G[v].initial = true;
+                        G[v].final = true;
                         count_same_initial_and_final_vertices += 1;
                     } else {
                         graph_is_correct = false;
@@ -479,7 +562,9 @@ int main(int argc, char* argv[]) {
 
                 if (!is_duplicate) {
                     unique_graphs.push_back(G);
-                    // write graph
+                    // Align graph
+                    align_vertices(G, vertices, 3.0, 3.0);
+                    // Write graph
                     std::ofstream file("dot/graph_" + std::to_string(file_counter++) + ".dot");
                     boost::write_graphviz(file, G, vertex_writer(G), edge_writer(G), graph_writer());
                 }
