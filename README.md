@@ -1,6 +1,7 @@
 # Feynman Diagram Generator (Under Construction)
 
-This project is a simple Feynman diagram generator written in C++ using the Boost Graph Library.
+- This project is a simple Feynman diagram generator written in C++ using the Boost Graph Library.
+- **At the moment, only undirected diagrams corresponding to the one-electron self-energy with electron-phonon interactions can be output.**
 
 <img src="images/first.png" width="300" >
 

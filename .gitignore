@@ -51,3 +51,7 @@ build/
 
 # For README
 !images/*.png
+
+# For Python
+venv/
+.venv/
