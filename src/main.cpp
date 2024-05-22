@@ -154,17 +154,6 @@ std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> get_initial
         G[v].dashed_loop = false;
     }
 
-/*
-    // Set properties for the initial and final states
-    G[vertices[0]].required_solid_degree = 1;
-    G[vertices[0]].fillcolor = "red";
-
-    if (number_of_vertices > 1) {
-        G[vertices[1]].required_solid_degree = 1;
-        G[vertices[1]].fillcolor = "blue";
-    }
-*/
-
     return std::make_tuple(G, vertices);
 }
 
