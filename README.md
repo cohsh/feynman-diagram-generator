@@ -20,11 +20,16 @@ Ensure you have the following installed on your system:
 sudo apt update
 sudo apt install cmake g++ libboost-all-dev graphviz
 ```
+
 #### Arch Linux:
 ```bash
 sudo pacman -S cmake boost graphviz
 ```
 
+#### macOS (with Homebrew)
+```bash
+brew install cmake boost graphviz
+```
 
 ## Usage
 
