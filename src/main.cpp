@@ -153,6 +153,7 @@ std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> get_initial
         G[v].dashed_loop = false;
     }
 
+/*
     // Set properties for the initial and final states
     G[vertices[0]].required_solid_degree = 1;
     G[vertices[0]].fillcolor = "red";
@@ -161,6 +162,7 @@ std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> get_initial
         G[vertices[1]].required_solid_degree = 1;
         G[vertices[1]].fillcolor = "blue";
     }
+*/
 
     return std::make_tuple(G, vertices);
 }
@@ -411,46 +413,51 @@ int main(int argc, char* argv[]) {
                     continue;
                 }
 
-                // Labeling
-                for (const auto& v : vertices) {
-                    int d = G[v].dashed_degree;
-                    G[v].label = std::to_string(d);
-                }
+                // Check shape of graph
+                int count_initial_and_final_vertices = 0;
+                int count_intermediate_vertices = 0;
 
+                for (const auto& v : vertices) {
+                    if (G[v].solid_degree == 1) {
+                        if (G[v].dashed_degree == 0) {
+                                graph_is_correct == false;
+                                break;
+                        } else {
+                            G[v].fillcolor = "red";
+                            count_initial_and_final_vertices += 1;
+                        }
+                    } else if (G[v].solid_degree == 2) {
+                        count_intermediate_vertices += 1;
+                    } else {
+                        graph_is_correct = false;
+                        break;
+                    }
+
+                    if (G[v].dashed_degree == 0) {
+                        graph_is_correct = false;
+                        break;
+                    }
 /*
-                if (G[vertices[0]].dashed_degree < 1 || G[vertices[1]].dashed_degree < 1) {
-                    graph_is_correct = false;
-                    continue;
-                }
-*/
-
-                for (const auto& v : vertices) {
-                    if (G[v].solid_degree > 2) {
-                        graph_is_correct = false;
-                        break;
-                    }
-                    if (G[v].dashed_degree == 0 && G[v].solid_degree != 0) {
-                        graph_is_correct = false;
-                        break;
-                    }
-                    if (G[v].dashed_degree != 0 && G[v].solid_degree == 0) {
-                        graph_is_correct = false;
-                        break;
-                    }
-
-                    if (G[v].solid_degree != G[v].required_solid_degree) {
-                        graph_is_correct = false;
-                        break;
-                    }
-
                     if (G[v].dashed_loop || G[v].solid_loop) {
                         graph_is_correct = false;
                         break;
                     }
+*/
+
                 }
-                
+
                 if (!graph_is_correct) {
                     continue;
+                }
+
+                if (count_initial_and_final_vertices + count_intermediate_vertices != vertices.size() || count_initial_and_final_vertices > 2) {
+                    continue;
+                }
+
+                // Labeling
+                for (const auto& v : vertices) {
+                    int d = G[v].dashed_degree;
+                    G[v].label = std::to_string(d);
                 }
 
                 if (graph_is_correct) {
