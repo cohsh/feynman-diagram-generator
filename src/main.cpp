@@ -563,7 +563,7 @@ int main(int argc, char* argv[]) {
                 if (!is_duplicate) {
                     unique_graphs.push_back(G);
                     // Align graph
-                    align_vertices(G, vertices, 3.0, 3.0);
+                    // align_vertices(G, vertices, 3.0, 3.0);
                     // Write graph
                     std::ofstream file("dot/graph_" + std::to_string(file_counter++) + ".dot");
                     boost::write_graphviz(file, G, vertex_writer(G), edge_writer(G), graph_writer());
