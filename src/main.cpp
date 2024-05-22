@@ -343,8 +343,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    int max_solid_edges = 2 * order - 1;
-
     int max_of_vertices = 2 * order;
 
     for (int number_of_vertices = 1; number_of_vertices < max_of_vertices + 1; ++number_of_vertices) {
