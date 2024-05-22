@@ -1,6 +1,7 @@
 #include <iostream>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphviz.hpp>
+#include <boost/graph/isomorphism.hpp>
 #include <vector>
 #include <ctime>
 #include <cstdlib>
@@ -319,6 +320,10 @@ std::unordered_set<SimpleGraph::vertex_descriptor> dfs_reachable_vertices_dashed
     return visited;
 }
 
+bool are_graphs_isomorphic(const SimpleGraph& g1, const SimpleGraph& g2) {
+    return boost::isomorphism(g1, g2);
+}
+
 int main(int argc, char* argv[]) {
     // argc: Number of command-line args
     // argv: Array of command-line args
@@ -346,6 +351,8 @@ int main(int argc, char* argv[]) {
     }
 
     int max_of_vertices = 2 * order;
+
+    std::vector<SimpleGraph> unique_graphs;
 
     for (int number_of_vertices = 1; number_of_vertices < max_of_vertices + 1; ++number_of_vertices) {
         // Create all possible edges
@@ -473,8 +480,17 @@ int main(int argc, char* argv[]) {
                     G[v].label = std::to_string(d);
                 }
 
-                if (graph_is_correct) {
-                    // graph_is_correct
+                bool is_duplicate = false;
+                for (const auto& existing_graph : unique_graphs) {
+                    if (are_graphs_isomorphic(G, existing_graph)) {
+                        is_duplicate = true;
+                        break;
+                    }
+                }
+
+                if (!is_duplicate) {
+                    unique_graphs.push_back(G);
+                    // write graph
                     std::ofstream file("dot/graph_" + std::to_string(file_counter++) + ".dot");
                     boost::write_graphviz(file, G, vertex_writer(G), edge_writer(G), graph_writer());
                 }
