@@ -26,12 +26,15 @@ int main(int argc, char* argv[]) {
     }
 
     // Limit of order
-    if (order > 3) {
-        std::cout << "Please specify the order as 3 or less." << std::endl;
+    if (order > 2) {
+        std::cout << "Please specify the order as 1 or 2." << std::endl;
         return 1;
     }
 
     int max_of_vertices = 2 * order;
+
+    // flag for ignoring diagrams with fermion-loop
+    bool ignore_fermion_loop = true;
 
     std::vector<SimpleGraph> unique_graphs;
 
@@ -136,7 +139,7 @@ int main(int argc, char* argv[]) {
                         break;
                     }
 
-                    if (G[v].solid_loop) {
+                    if (G[v].solid_loop && ignore_fermion_loop) {
                         graph_is_correct = false;
                         break;
                     }
