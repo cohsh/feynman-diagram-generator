@@ -7,15 +7,26 @@
   renderer (electron line as a horizontal backbone, phonon lines as wavy arcs),
   so Graphviz is optional.
 
-Order 1 (proper):
+## Examples
+
+The **order** is the number of phonon (wavy) lines, i.e. the order of
+perturbation theory. In every diagram:
+
+- the **straight line with arrows** is the electron propagator, drawn along a
+  horizontal backbone (**red** = incoming/initial vertex, **blue** =
+  outgoing/final vertex);
+- the **wavy lines** are phonon propagators;
+- the number inside a vertex is how many phonon lines attach to it.
+
+### First order — 2 proper diagrams
 
 <img src="images/order1.png" width="420" >
 
-Order 2 (proper):
+### Second order — 13 proper diagrams
 
 <img src="images/order2.png" width="640" >
 
-Order 3 (proper, 139 diagrams):
+### Third order — 139 proper diagrams
 
 <img src="images/order3.png" width="880" >
 
