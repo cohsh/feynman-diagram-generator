@@ -2,10 +2,18 @@
 
 - This project is a simple Feynman diagram generator written in C++ using the Boost Graph Library.
 - **At the moment, only undirected diagrams corresponding to the one-electron self-energy with electron-phonon interactions can be output.**
+- Diagrams are enumerated up to isomorphism and, by default, restricted to the
+  **proper (one-particle-irreducible)** ones. They are drawn by a built-in SVG
+  renderer (electron line as a horizontal backbone, phonon lines as wavy arcs),
+  so Graphviz is optional.
 
-<img src="images/first.png" width="300" >
+Order 1 (proper):
 
-<img src="images/second.png" width="600" >
+<img src="images/first.png" width="420" >
+
+Order 2 (proper):
+
+<img src="images/second.png" width="640" >
 
 ## Prerequisites
 
@@ -13,7 +21,8 @@ Ensure you have the following installed on your system:
 - CMake (version 3.13 or higher)
 - A C++ compiler (e.g., g++, clang)
 - Boost library
-- Graphviz (for generating graphical output)
+- Graphviz (optional; only needed to rasterize the `.dot` files to PNG — SVG
+  output works without it)
 
 ### Install dependencies
 #### Debian-based systems:
