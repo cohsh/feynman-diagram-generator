@@ -61,8 +61,8 @@ int main(int argc, char* argv[]) {
     }
 
     // Limit of order
-    if (order > 3) {
-        std::cout << "Please specify the order as 1, 2, or 3." << std::endl;
+    if (order > 4) {
+        std::cout << "Please specify the order as 1, 2, 3, or 4." << std::endl;
         return 1;
     }
 

@@ -30,6 +30,12 @@ perturbation theory. In every diagram:
 
 <img src="images/order3.png" width="880" >
 
+### Fourth order — 2119 proper diagrams
+
+All 2119 of them (takes about two minutes to generate):
+
+<img src="images/order4.png" width="900" >
+
 ## Prerequisites
 
 Ensure you have the following installed on your system:
@@ -74,7 +80,7 @@ cmake -S . -B build
 make
 ```
 
-4. Run the executable ($n=1,2,3$ is the order of diagrams):
+4. Run the executable ($n=1,2,3,4$ is the order of diagrams; $n=4$ takes ~2 min):
 ```bash
 ./generate_graph.sh n
 ```
