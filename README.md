@@ -32,8 +32,6 @@ perturbation theory. In every diagram:
 
 ### Fourth order — 2119 proper diagrams
 
-All 2119 of them (takes about two minutes to generate):
-
 <img src="images/order4.png" width="900" >
 
 ## Prerequisites
