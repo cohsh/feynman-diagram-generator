@@ -9,11 +9,11 @@
 
 Order 1 (proper):
 
-<img src="images/first.png" width="420" >
+<img src="images/order1.png" width="420" >
 
 Order 2 (proper):
 
-<img src="images/second.png" width="640" >
+<img src="images/order2.png" width="640" >
 
 ## Prerequisites
 
