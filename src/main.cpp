@@ -1,9 +1,41 @@
 #include <iostream>
 #include <cstdlib>
 #include <filesystem>
+#include <unordered_set>
 #include "graph.hpp"
-#include "bfs_dfs.hpp"
 #include "utility.hpp"
+
+namespace {
+using EdgeList = std::vector<std::pair<int, int>>;
+
+// A solid-edge set can only yield a valid diagram if every vertex keeps an
+// electron degree <= 2 (the shape check rejects anything else outright), so we
+// drop over-degree sets before building a graph for them.
+bool solid_degrees_within_bound(const EdgeList& edges, int number_of_vertices) {
+    std::vector<int> degree(number_of_vertices, 0);
+    for (const auto& e : edges) {
+        if (++degree[e.first] > 2 || ++degree[e.second] > 2) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// A dashed-edge set can only yield a valid diagram if every vertex carries at
+// least one phonon line; dashed degree depends solely on the dashed edges, so
+// uncovered sets are always rejected and can be skipped early.
+bool dashed_covers_all_vertices(const EdgeList& edges, int number_of_vertices) {
+    std::vector<bool> covered(number_of_vertices, false);
+    for (const auto& e : edges) {
+        covered[e.first] = true;
+        covered[e.second] = true;
+    }
+    for (bool c : covered) {
+        if (!c) return false;
+    }
+    return true;
+}
+}
 
 int main(int argc, char* argv[]) {
     // argc: Number of command-line args
@@ -26,8 +58,8 @@ int main(int argc, char* argv[]) {
     }
 
     // Limit of order
-    if (order > 2) {
-        std::cout << "Please specify the order as 1 or 2." << std::endl;
+    if (order > 3) {
+        std::cout << "Please specify the order as 1, 2, or 3." << std::endl;
         return 1;
     }
 
@@ -36,148 +68,64 @@ int main(int argc, char* argv[]) {
     // flag for ignoring diagrams with fermion-loop
     bool ignore_fermion_loop = true;
 
-    std::vector<SimpleGraph> unique_graphs;
+    // Canonical forms of the diagrams emitted so far. A candidate is a duplicate
+    // exactly when its canonical form is already present, so dedup is an O(1) hash
+    // lookup instead of a pairwise isomorphism scan, and only a short string is
+    // kept per diagram rather than the whole graph.
+    std::unordered_set<std::string> seen_canonical_forms;
 
     for (int number_of_vertices = 1; number_of_vertices < max_of_vertices + 1; ++number_of_vertices) {
         // Create all possible edges
-        std::vector<std::pair<int, int>> all_edges;
-
+        EdgeList all_edges;
         for (int i = 0; i < number_of_vertices; ++i) {
             for (int j = i; j < number_of_vertices; ++j) {
                 all_edges.push_back({i, j});
             }
         }
 
-        // Generate all combinations of order edges
-        auto all_dashed_combinations = combinations(all_edges, order);
+        // Pre-filter the edge sets once per vertex count, keeping only those that
+        // can still produce a valid diagram (preserving enumeration order so the
+        // surviving candidate sequence is a subsequence of the brute-force one).
+        std::vector<EdgeList> dashed_combinations;
+        enumerate_combinations(all_edges, order, [&](const EdgeList& combo) {
+            if (dashed_covers_all_vertices(combo, number_of_vertices)) {
+                dashed_combinations.push_back(combo);
+            }
+        });
 
-        for (const auto& dashed_edges : all_dashed_combinations) {
-            auto all_solid_combinations = combinations(all_edges, number_of_vertices - 1);
+        std::vector<EdgeList> solid_combinations;
+        enumerate_combinations(all_edges, number_of_vertices - 1, [&](const EdgeList& combo) {
+            if (solid_degrees_within_bound(combo, number_of_vertices)) {
+                solid_combinations.push_back(combo);
+            }
+        });
 
-            for (const auto& solid_edges : all_solid_combinations) {
+        for (const auto& dashed_edges : dashed_combinations) {
+            for (const auto& solid_edges : solid_combinations) {
                 // Initialize graph
-                std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> result = get_initial_graph_and_vertices(number_of_vertices);
-
                 SimpleGraph G;
                 std::vector<SimpleGraph::vertex_descriptor> vertices;
-                
-                std::tie(G, vertices) = result;
+                std::tie(G, vertices) = get_initial_graph_and_vertices(number_of_vertices);
 
-                // Initialize graph_is_correct flag
-                bool graph_is_correct = true;
+                // Add phonon (dashed) and electron (solid) edges
+                add_styled_edges(G, vertices, dashed_edges, /*dashed=*/true);
+                add_styled_edges(G, vertices, solid_edges, /*dashed=*/false);
 
-                // Add dashed edges
-                for (const auto& dashed_edge : dashed_edges) {
-                    auto e = add_edge(vertices[dashed_edge.first], vertices[dashed_edge.second], G).first;
-                    G[vertices[dashed_edge.first]].dashed_degree++;
-                    G[vertices[dashed_edge.second]].dashed_degree++;
-                    if (dashed_edge.first == dashed_edge.second) {
-                        G[vertices[dashed_edge.first]].dashed_loop = true;
-                    }
-                    G[e].style = "dashed";
+                // Keep only connected, well-shaped self-energy diagrams
+                if (!is_fully_connected(G, vertices)) {
+                    continue;
                 }
-
-
-                // Add solid edges
-                for (const auto& solid_edge : solid_edges) {
-                    auto e = add_edge(vertices[solid_edge.first], vertices[solid_edge.second], G).first;
-                    G[vertices[solid_edge.first]].solid_degree++;
-                    G[vertices[solid_edge.second]].solid_degree++;
-                    if (solid_edge.first == solid_edge.second) {
-                        G[vertices[solid_edge.first]].solid_loop = true;
-                    }
-
-                    G[e].style = "solid";
-                }
-
-                // Perform DFS to find all vertices connected to vertices[0]
-                auto reachable_from_initial = dfs_reachable_vertices(G, vertices[0]);
-
-                for (const auto& v : vertices) {
-                    if (reachable_from_initial.find(v) == reachable_from_initial.end()) {
-                        graph_is_correct = false;
-                        break;
-                    }
-                }
-
-                if (!graph_is_correct) {
+                if (!classify_and_validate_shape(G, vertices, ignore_fermion_loop)) {
                     continue;
                 }
 
-                // Check shape of graph
-                int count_initial_and_final_vertices = 0;
-                int count_same_initial_and_final_vertices = 0;
-                int count_intermediate_vertices = 0;
-                int initial_is_found = false;
-
+                // Labeling: show each vertex's phonon-line count
                 for (const auto& v : vertices) {
-                    if (G[v].solid_degree == 1) {
-                        if (count_initial_and_final_vertices == 0) {
-                            G[v].fillcolor = "red";
-                            G[v].initial = true;
-                        } else if (count_initial_and_final_vertices == 1) {
-                            G[v].fillcolor = "blue";
-                            G[v].final = true;
-                        }
-
-                        count_initial_and_final_vertices += 1;
-
-                    } else if (G[v].solid_degree == 2) {
-                        count_intermediate_vertices += 1;
-                    } else if (G[v].solid_degree == 0) {
-                        G[v].fillcolor = "red";
-                        G[v].initial = true;
-                        G[v].final = true;
-                        count_same_initial_and_final_vertices += 1;
-                    } else {
-                        graph_is_correct = false;
-                        break;
-                    }
-
-                    if (G[v].dashed_degree == 0) {
-                        graph_is_correct = false;
-                        break;
-                    }
-
-                    if (G[v].solid_loop && ignore_fermion_loop) {
-                        graph_is_correct = false;
-                        break;
-                    }
-
+                    G[v].label = std::to_string(G[v].dashed_degree);
                 }
 
-                if (!graph_is_correct) {
-                    continue;
-                }
-
-                if (count_same_initial_and_final_vertices == 0) {
-                    if (count_initial_and_final_vertices + count_intermediate_vertices != vertices.size() || count_initial_and_final_vertices > 2) {
-                        continue;
-                    }
-                } else if (count_same_initial_and_final_vertices == 1) {
-                    if (count_same_initial_and_final_vertices + count_intermediate_vertices != vertices.size() || count_initial_and_final_vertices != 0) {
-                        continue;
-                    }
-                } else {
-                    continue;
-                }
-
-                // Labeling
-                for (const auto& v : vertices) {
-                    int d = G[v].dashed_degree;
-                    G[v].label = std::to_string(d);
-                }
-
-                bool is_duplicate = false;
-                for (const auto& existing_graph : unique_graphs) {
-                    if (are_graphs_isomorphic(G, existing_graph)) {
-                        is_duplicate = true;
-                        break;
-                    }
-                }
-
-                if (!is_duplicate) {
-                    unique_graphs.push_back(G);
+                // Deduplicate by canonical form (O(1) hash lookup)
+                if (seen_canonical_forms.insert(canonical_form(G)).second) {
                     // Add short slanted lines to initial and final vertices
                     add_short_slanted_lines(G, vertices);
                     // Align graph
