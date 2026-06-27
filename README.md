@@ -15,6 +15,10 @@ Order 2 (proper):
 
 <img src="images/order2.png" width="640" >
 
+Order 3 (proper, 139 diagrams):
+
+<img src="images/order3.png" width="880" >
+
 ## Prerequisites
 
 Ensure you have the following installed on your system:
