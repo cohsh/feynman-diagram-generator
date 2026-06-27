@@ -1,9 +1,11 @@
 #include <iostream>
 #include <cstdlib>
+#include <cstring>
 #include <filesystem>
 #include <unordered_set>
 #include "graph.hpp"
 #include "utility.hpp"
+#include "svg_writer.hpp"
 
 namespace {
 using EdgeList = std::vector<std::pair<int, int>>;
@@ -41,8 +43,9 @@ int main(int argc, char* argv[]) {
     // argc: Number of command-line args
     // argv: Array of command-line args
 
-    // Ensure the "dot" directory exists
+    // Ensure the output directories exist
     std::filesystem::create_directories("dot");
+    std::filesystem::create_directories("svg");
 
     // Counter for output files
     int file_counter = 0;
@@ -61,6 +64,15 @@ int main(int argc, char* argv[]) {
     if (order > 3) {
         std::cout << "Please specify the order as 1, 2, or 3." << std::endl;
         return 1;
+    }
+
+    // By default only proper (1PI) self-energy diagrams are emitted; pass
+    // "improper" (or "--improper") to also include the reducible ones.
+    bool include_improper = false;
+    for (int i = 2; i < argc; ++i) {
+        if (std::strcmp(argv[i], "improper") == 0 || std::strcmp(argv[i], "--improper") == 0) {
+            include_improper = true;
+        }
     }
 
     int max_of_vertices = 2 * order;
@@ -119,6 +131,11 @@ int main(int argc, char* argv[]) {
                     continue;
                 }
 
+                // By default keep only proper (1PI) diagrams
+                if (!include_improper && !is_proper_diagram(G)) {
+                    continue;
+                }
+
                 // Labeling: show each vertex's phonon-line count
                 for (const auto& v : vertices) {
                     G[v].label = std::to_string(G[v].dashed_degree);
@@ -126,12 +143,13 @@ int main(int argc, char* argv[]) {
 
                 // Deduplicate by canonical form (O(1) hash lookup)
                 if (seen_canonical_forms.insert(canonical_form(G)).second) {
-                    // Add short slanted lines to initial and final vertices
+                    int id = file_counter++;
+                    // The SVG renderer lays out the diagram itself (electron
+                    // backbone, phonon arcs), so render before the dot-only dummies.
+                    write_svg(G, "svg/graph_" + std::to_string(id) + ".svg");
+                    // Add short slanted lines to initial and final vertices (dot)
                     add_short_slanted_lines(G, vertices);
-                    // Align graph
-                    // align_vertices(G, vertices, 3.0, 3.0);
-                    // Write graph
-                    std::ofstream file("dot/graph_" + std::to_string(file_counter++) + ".dot");
+                    std::ofstream file("dot/graph_" + std::to_string(id) + ".dot");
                     boost::write_graphviz(file, G, vertex_writer(G), edge_writer(G), graph_writer());
                 }
             }

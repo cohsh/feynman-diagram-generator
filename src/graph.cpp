@@ -5,6 +5,8 @@
 #include <map>
 #include <array>
 #include <functional>
+#include <unordered_set>
+#include <stack>
 
 std::tuple<SimpleGraph, std::vector<SimpleGraph::vertex_descriptor>> get_initial_graph_and_vertices(int number_of_vertices) {
     SimpleGraph G;
@@ -167,6 +169,43 @@ std::string canonical_form(const SimpleGraph& G) {
     search(0, 0);
 
     return std::to_string(V) + "#" + best;
+}
+
+namespace {
+// Can vertex a reach vertex b over all edges except the single edge `skip`?
+bool reaches_skipping_edge(const SimpleGraph& G, SimpleGraph::vertex_descriptor a,
+                           SimpleGraph::vertex_descriptor b, SimpleGraph::edge_descriptor skip) {
+    std::unordered_set<SimpleGraph::vertex_descriptor> visited;
+    std::stack<SimpleGraph::vertex_descriptor> s;
+    visited.insert(a);
+    s.push(a);
+    while (!s.empty()) {
+        auto u = s.top();
+        s.pop();
+        for (auto it = out_edges(u, G); it.first != it.second; ++it.first) {
+            if (*it.first == skip) continue;
+            auto v = target(*it.first, G);
+            if (visited.insert(v).second) {
+                if (v == b) return true;
+                s.push(v);
+            }
+        }
+    }
+    return visited.find(b) != visited.end();
+}
+}
+
+bool is_proper_diagram(const SimpleGraph& G) {
+    // Improper if some internal electron line is a bridge: removing it would
+    // split the diagram into two lower-order self-energy pieces.
+    for (auto er = edges(G); er.first != er.second; ++er.first) {
+        const auto e = *er.first;
+        if (G[e].style != LineStyle::Solid) continue;
+        auto a = source(e, G), b = target(e, G);
+        if (a == b) continue;
+        if (!reaches_skipping_edge(G, a, b, e)) return false;
+    }
+    return true;
 }
 
 bool is_fully_connected(const SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices) {

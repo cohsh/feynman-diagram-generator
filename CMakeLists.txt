@@ -20,6 +20,7 @@ set(SOURCES
     src/graph.cpp
     src/bfs_dfs.cpp
     src/utility.cpp
+    src/svg_writer.cpp
 )
 
 # Add the executable

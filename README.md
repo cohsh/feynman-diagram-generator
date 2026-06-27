@@ -54,4 +54,16 @@ make
 ```bash
 ./generate_graph.sh n
 ```
-This will generate `dot/graph_*.dot` and `png/graph_*.png` files.
+This generates:
+- `svg/graph_*.svg` — diagrams drawn directly by a built-in renderer
+  (electron lines as a horizontal backbone, phonon lines as wavy arcs), so
+  Graphviz is **not** required for vector output;
+- `dot/graph_*.dot` — Graphviz source;
+- `png/graph_*.png` — rasterized from the dot files, only if Graphviz `dot` is
+  installed.
+
+By default only **proper (one-particle-irreducible)** self-energy diagrams are
+produced. To also include the improper (reducible) ones, pass `improper`:
+```bash
+./generate_graph.sh n improper
+```

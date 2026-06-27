@@ -43,6 +43,10 @@ build/
 # Graph PNG
 *.png
 
+# Graph SVG
+*.svg
+svg/
+
 # TeX files
 *.aux
 *.log

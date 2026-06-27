@@ -86,5 +86,10 @@ std::string canonical_form(const SimpleGraph& G);
 // them, and decide whether the graph is a valid self-energy diagram. Mutates G.
 bool classify_and_validate_shape(SimpleGraph& G, const std::vector<SimpleGraph::vertex_descriptor>& vertices,
                                  bool ignore_fermion_loop);
+// True if the diagram is proper (one-particle-irreducible): no internal electron
+// line is a bridge, i.e. cutting any single electron propagator leaves the graph
+// connected. Improper (reducible) diagrams are resummed by the Dyson equation and
+// so are normally excluded from the self-energy.
+bool is_proper_diagram(const SimpleGraph& G);
 
 #endif
